@@ -1,5 +1,5 @@
 {
-    "name": "kaliop/queueingbundle-SQS",
+    "name": "kaliop/queueingbundle-sqs",
     "description": "Kaliop Queueing Bundle - AMAZON SQS plugin",
     "license": "GPL-2.0",
     "autoload": {
