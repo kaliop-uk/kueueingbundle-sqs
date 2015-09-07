@@ -1,0 +1,13 @@
+# Configuration file used for running tests
+# TODO
+
+framework:
+    secret: "ThisIsNotSoSercretSoWeTestIt"
+
+doctrine_cache:
+    providers:
+        sqs_sequence_number_store:
+            php_file:
+                directory: %kernel.cache_dir%/sqs_sequence_number_store
+    aliases:
+        sqs_sequence_number_store: sqs_sequence_number_store

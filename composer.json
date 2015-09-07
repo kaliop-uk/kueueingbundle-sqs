@@ -1,0 +1,15 @@
+{
+    "name": "kaliop/queueingbundle-SQS",
+    "description": "Kaliop Queueing Bundle - AMAZON SQS plugin",
+    "license": "GPL-2.0",
+    "autoload": {
+        "psr-4": { "Kaliop\\Queueing\\Plugins\\SQSBundle\\": "" }
+    },
+    "require": {
+        "kaliop/queueingbundle": "@dev",
+        "aws/aws-sdk-php": "~3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
+    }
+}

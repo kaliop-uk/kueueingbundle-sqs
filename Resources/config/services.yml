@@ -1,0 +1,37 @@
+parameters:
+    kaliop_queueing.driver.sqs.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\Driver
+    kaliop_queueing.sqs.queue_manager.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\QueueManager
+    kaliop_queueing.sqs.producer.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\Producer
+    kaliop_queueing.sqs.consumer.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\Consumer
+    kaliop_queueing.sqs.sequence_number_store.doctrine_cache.class: Kaliop\Queueing\Plugins\SQSBundle\Service\DoctrineCacheSequenceNumberStore
+
+services:
+    kaliop_queueing.driver.sqs:
+        class: %kaliop_queueing.driver.sqs.class%
+        calls:
+            - [ setContainer, [ @service_container ] ]
+        tags:
+            - { name: kaliop_queueing.driver, alias: sqs }
+
+    kaliop_queueing.sqs.queue_manager:
+        class: %kaliop_queueing.sqs.queue_manager.class%
+        #parent: kaliop_queueing.message_producer
+        calls:
+            - [ setContainer, [ @service_container ] ]
+
+    kaliop_queueing.sqs.sequence_number_store:
+        class: %kaliop_queueing.sqs.sequence_number_store.doctrine_cache.class%
+        # whacky syntax to inject a service with a name coming from a parameter
+        arguments: [ "@=service(parameter('kaliop_queueing_sqs.default.sequence_number_store.doctrine_cache'))" ]
+
+    kaliop_queueing.sqs.producer:
+        class: %kaliop_queueing.sqs.producer.class%
+        arguments: [ %kaliop_queueing_sqs.default.client_config% ]
+
+    kaliop_queueing.sqs.consumer:
+        class: %kaliop_queueing.sqs.consumer.class%
+        arguments: [ %kaliop_queueing_sqs.default.client_config% ]
+        calls:
+            - [ setDefaultShardIteratorType, [ %kaliop_queueing_kinesis.default.missing_sequence_number_strategy% ] ]
+            - [ setSequenceNumberStore, [ @kaliop_queueing.sqs.sequence_number_store ] ]
+            - [ setRequestBatchSize, [ %kaliop_queueing_sqs.default.request_batch_size% ] ]
