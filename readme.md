@@ -19,9 +19,8 @@ It has been given its own bundle because it has higher requirements than the bas
 ## Usage
 
 4. If you do not have an AWS account, sign up for one at http://aws.amazon.com/
-    NB: note that there is no free tier for Kinesis. Pricing is described at: http://aws.amazon.com/kinesis/pricing/
 
-5. Create a Kinesis stream, using the web interface: https://console.aws.amazon.com/kinesis/home
+5. Create an SQS queue, using the web interface: https://console.aws.amazon.com/sqs/home
 
 6. Set up configuration according to your AWS account
 

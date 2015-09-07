@@ -3,7 +3,6 @@ parameters:
     kaliop_queueing.sqs.queue_manager.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\QueueManager
     kaliop_queueing.sqs.producer.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\Producer
     kaliop_queueing.sqs.consumer.class: Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS\Consumer
-    kaliop_queueing.sqs.sequence_number_store.doctrine_cache.class: Kaliop\Queueing\Plugins\SQSBundle\Service\DoctrineCacheSequenceNumberStore
 
 services:
     kaliop_queueing.driver.sqs:
@@ -18,11 +17,6 @@ services:
         #parent: kaliop_queueing.message_producer
         calls:
             - [ setContainer, [ @service_container ] ]
-
-    kaliop_queueing.sqs.sequence_number_store:
-        class: %kaliop_queueing.sqs.sequence_number_store.doctrine_cache.class%
-        # whacky syntax to inject a service with a name coming from a parameter
-        arguments: [ "@=service(parameter('kaliop_queueing_sqs.default.sequence_number_store.doctrine_cache'))" ]
 
     kaliop_queueing.sqs.producer:
         class: %kaliop_queueing.sqs.producer.class%
