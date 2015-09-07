@@ -1,6 +1,6 @@
 <?php
 
-namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\Kinesis;
+namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Service\MessageProducer as BaseMessageProducer;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
@@ -71,7 +71,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 
     protected function queueInfo()
     {
-        $result = $this->getProducerService()->call('getQueueAttributes', array('QueueUrl' => $this->streamName));
+        $result = $this->getProducerService()->call('getQueueAttributes', array('QueueUrl' => $this->streamName, 'AttributeNames' => array('All')));
         return $result->get('Attributes');
     }
 

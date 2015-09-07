@@ -5,12 +5,18 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 use Kaliop\QueueingBundle\Queue\ProducerInterface;
 use Aws\Sqs\SqsClient;
 
+/**
+ * @todo add support for batch sending
+ */
 class Producer implements ProducerInterface
 {
     /** @var  \Aws\Sqs\SqsClient */
     protected $client;
     protected $queueUrl;
     protected $debug;
+    protected $contentType = 'text/plain';
+    // The message attribute used to store content-type. To be kept in sync with the Consumer
+    protected $contentTypeAttribute = 'contentType';
 
     /**
      * @param array $config - minimum seems to be: 'credentials', 'region', 'version'
@@ -35,34 +41,23 @@ class Producer implements ProducerInterface
     }
 
     /**
-     * Note that this has less effect than passing a 'debug' option in constructor, as it will be
-     * only used by publish() from now on
-     *
-     * @param bool $debug use null for 'undefined'
-     * @return Producer
-     */
-    public function setDebug($debug)
-    {
-        $this->debug = $debug;
-
-        return $this;
-    }
-
-    /**
      * Publishes the message and does nothing with the properties
      *
      * @param string $msgBody
      * @param string $routingKey
      * @param array $additionalProperties
+     *
+     * @todo support custom message attributes
+     * @todo support custom delaySeconds
      */
     public function publish($msgBody, $routingKey = '', $additionalProperties = array())
     {
-        $result = $this->client->sendMessage(array_merge(
+        $this->client->sendMessage(array_merge(
             array(
                 'QueueUrl' => $this->queueUrl,
-                'MessageBody' => $msgBody
+                'MessageBody' => $msgBody,
             ),
-            $this->getClientParams()
+            $this->getClientParams($additionalProperties)
         ));
     }
 
@@ -80,31 +75,26 @@ class Producer implements ProducerInterface
 
     /**
      * Prepares the extra parameters to be injected into calls made via the SQS Client
+     * @param array $additionalProperties
      * @return array
      */
-    protected function getClientParams()
+    protected function getClientParams(array $additionalProperties = array())
     {
-///@todo
-        if ($this->debug !== null) {
-            return array('@http' => array('debug' => $this->debug));
-        }
-
-        return array();
+        return array(
+            'MessageAttributes' => array(
+                $this->contentTypeAttribute => array('StringValue' => $this->contentType, 'DataType' => 'String')
+            )
+        );
     }
 
     /**
      * @param string $contentType
      * @return Producer
      * @throws \Exception if unsupported contentType is used
-     *
-     * @todo allow different serializations - but the SQS protocol does not allow to store the content type in the
-     *       message natively, so we should have to 'invent' an encapsulation format...
      */
     public function setContentType($contentType)
     {
-        if($contentType != 'application/json') {
-            throw new \Exception("Unsupported content-type for message serialization: $contentType. Only 'application/json' is supported");
-        }
+        $this->contentType = $contentType;
 
         return $this;
     }

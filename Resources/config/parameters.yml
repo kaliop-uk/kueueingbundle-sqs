@@ -13,16 +13,6 @@ parameters:
         # to get even more debug info that is available via command line switches, use:
         #debug: true
 
-    # You should set up a doctrine-cache provider to be used here, f.e. in app/config/config.yml : just copy its name here.
-    # An example config is in sqs_sample.yml.
-    # @see https://github.com/doctrine/DoctrineCacheBundle for supported configuration
-    kaliop_queueing_sqs.default.sequence_number_store.doctrine_cache: sqs_sequence_number_store
-
-    # What to do when the consumer starts and it has no pointer to the last consumed message:
-    # TRIM_HORIZON : get all messages in the shard
-    # LATEST : skip all messages already in the shard, only get ones added starting from now
-    kaliop_queueing_sqs.default.missing_sequence_number_strategy: 'TRIM_HORIZON'
-
     # The number of messages to download in a single request to the sqs API.
     # Bigger numbers will give better performances, but the API is rate-limited: the size of a single response
     # should not exceed 2MB and 10.000 items.

@@ -1,12 +1,15 @@
 <?php
 
-namespace Kaliop\Queueing\Plugins\KinesisBundle\Adapter\Kinesis;
+namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Kaliop\QueueingBundle\Queue\ConsumerInterface;
 use Kaliop\Queueing\Plugins\KinesisBundle\Service\SequenceNumberStoreInterface;
 use \Aws\Sqs\SqsClient;
 
+/**
+ * @todo support long polling
+ */
 class Consumer implements ConsumerInterface
 {
     /** @var  \Aws\Sqs\SqsClient */
@@ -14,6 +17,8 @@ class Consumer implements ConsumerInterface
     protected $queueUrl;
     protected $callback;
     protected $requestBatchSize = 1;
+    // The message attribute used to store content-type. To be kept in sync with the Producer
+    protected $contentTypeAttribute = 'contentType';
 
     public function __construct(array $config)
     {
@@ -76,22 +81,45 @@ class Consumer implements ConsumerInterface
         $limit = ($amount > 0) ? $amount : $this->requestBatchSize;
 
         while(true) {
+            $reqTime = microtime(true);
             $result = $this->client->receiveMessage(array(
                 'QueueUrl' => $this->queueUrl,
                 'MaxNumberOfMessages' => $limit,
+                'AttributeNames' => array('All'),
+                'MessageAttributeNames' => array('All')
             ));
 
-            $records = $result->get('Records');
+            $messages = $result->get('Messages');
 
-/// @todo...
-            foreach($records as $record) {
-                $data = $record['Data'];
-                unset($record['Data']);
-                $this->callback->receive(new Message($data, $record));
+            if (is_array($messages)) {
+                foreach($messages as $message) {
+
+                    // removing the message from the queue is manual with SQS
+                    $this->client->deleteMessage(array(
+                        'QueueUrl' => $this->queueUrl,
+                        'ReceiptHandle' => $message['ReceiptHandle']
+                    ));
+
+                    $data = $message['Body'];
+                    unset($message['Body']);
+
+                    $this->callback->receive(new Message(
+                        $data,
+                        $message,
+                        $message['MessageAttributes'][$this->contentTypeAttribute]['StringValue'])
+                    );
+                }
             }
 
             if ($amount > 0) {
                 return;
+            }
+
+            /// @todo use a parameter to decide the polling interval
+            // observe MAX 5 requests per sec per queue: sleep for 0.2 secs in between requests
+            $passedMs = (microtime(true) - $reqTime) * 1000000;
+            if ($passedMs < 200000) {
+                usleep(200000 - $passedMs);
             }
         }
     }

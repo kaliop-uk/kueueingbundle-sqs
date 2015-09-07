@@ -32,6 +32,4 @@ services:
         class: %kaliop_queueing.sqs.consumer.class%
         arguments: [ %kaliop_queueing_sqs.default.client_config% ]
         calls:
-            - [ setDefaultShardIteratorType, [ %kaliop_queueing_kinesis.default.missing_sequence_number_strategy% ] ]
-            - [ setSequenceNumberStore, [ @kaliop_queueing.sqs.sequence_number_store ] ]
             - [ setRequestBatchSize, [ %kaliop_queueing_sqs.default.request_batch_size% ] ]

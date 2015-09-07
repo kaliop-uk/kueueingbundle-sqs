@@ -5,6 +5,9 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 use Kaliop\QueueingBundle\Adapter\DriverInterface;
 use Symfony\Component\DependencyInjection\ContainerAware;
 
+/**
+ * @todo inject Debug flag in both consumers and producers
+ */
 class Driver extends ContainerAware implements DriverInterface
 {
     protected $debug;
@@ -52,7 +55,6 @@ class Driver extends ContainerAware implements DriverInterface
     {
         $producer = $this->container->get('kaliop_queueing.sqs.producer');
         $producer->setQueueName($queueName);
-        $producer->setDebug($this->debug);
         return $producer;
     }
 
