@@ -4,6 +4,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class servicesTest extends WebTestCase
 {
+    protected $queueName = 'https://sqs.us-east-1.amazonaws.com/139046234059';
+
     protected function getContainer()
     {
         if (null !== static::$kernel) {
@@ -25,5 +27,16 @@ class servicesTest extends WebTestCase
         $service = $container->get('kaliop_queueing.sqs.queue_manager');
         $service = $container->get('kaliop_queueing.sqs.producer');
         $service = $container->get('kaliop_queueing.sqs.consumer');
+    }
+
+    public function testSendAndReceiveMessage()
+    {
+        $container = $this->getContainer();
+        $driver = $container->get('kaliop_queueing.drivermanager')->getDriver('sqs');
+
+        $service = $container->get('kaliop_queueing.message_producer.generic_message');
+        $service->setDriver($driver)->setQueuname($this->queueName)->publish('{"hello":"world"}');
+
+        $driver->getConsumer($this->queueName)->consume(1);
     }
 }
