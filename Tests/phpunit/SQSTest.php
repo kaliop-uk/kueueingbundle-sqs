@@ -2,7 +2,7 @@
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-abstract class SQSTests extends WebTestCase
+abstract class SQSTest extends WebTestCase
 {
     protected $queueName = 'https://sqs.us-east-1.amazonaws.com/139046234059';
 
