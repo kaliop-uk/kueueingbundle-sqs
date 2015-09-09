@@ -78,7 +78,12 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
     protected function listQueues()
     {
         $result = $this->getProducerService()->call('listQueues');
-        return $result->get('QueueUrls');
+        $result = $result->get('QueueUrls');
+        // make this slightly easier to understand by callers
+        if ($result === null) {
+            $result = array();
+        }
+        return $result;
     }
 
     protected function getProducerService()

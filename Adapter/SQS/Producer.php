@@ -70,16 +70,19 @@ class Producer implements ProducerInterface
      */
     public function batchPublish(array $messages)
     {
+        $j = 0;
         for ($i = 0; $i < count($messages); $i += 10) {
             $entries = array();
             foreach(array_slice($messages, $i, 10) as $message) {
                 $entries[] = array_merge(
                     array(
                         'MessageBody' => $message['msgBody'],
+                        'Id' => $j++
                     ),
                     $this->getClientParams(@$message['additionalProperties'])
                 );
             }
+
             $this->client->sendMessageBatch(
                 array(
                     'QueueUrl' => $this->queueUrl,

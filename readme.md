@@ -28,20 +28,23 @@ It has been given its own bundle because it has higher requirements than the bas
  
 7. check that you can list the stream, and the shards in it:
  
-        php app/console kaliop_queueing:managequeue list -bsqs
+        php app/console kaliop_queueing:managequeue list -isqs
         
-        php app/console kaliop_queueing:managequeue info -bsqs <queue>
+        php app/console kaliop_queueing:managequeue info -isqs <queue>
 
 8. push a message to the stream 
 
-        php app/console kaliop_queueing:queuemessage -bsqs <queue> <jsonpayload>
+        php app/console kaliop_queueing:queuemessage -isqs <queue> <jsonpayload>
         
 9. receive messages from the stream
 
-        php app/console kaliop_queueing:consumer -bsqs <queue>
+        php app/console kaliop_queueing:consumer -isqs <queue>
 
 
 ## Notes
+
+* SQS does NOT support setting a per-message TTL, only a per-queue one, so all MessageProducers which do have a TTL
+    parameter in their public methods will just ignore it when being used with the SQS driver
 
 * SQS does *not* guarantee that messages are delivered in the same order they are sent.
     If such a constraint is important, build monotonically increasing message IDs in your app, and manage them.
