@@ -49,6 +49,7 @@ class Producer implements ProducerInterface
      *
      * @todo support custom message attributes
      * @todo support custom delaySeconds
+     * @todo check how to handle failures: is an Exception thrown by the aws sdk?
      */
     public function publish($msgBody, $routingKey = '', $additionalProperties = array())
     {
@@ -59,6 +60,33 @@ class Producer implements ProducerInterface
             ),
             $this->getClientParams($additionalProperties)
         ));
+    }
+
+    /**
+     * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#sendmessagebatch
+     * @param array $messages
+     *
+     * @todo we should check for error messages and possibly throw an error
+     */
+    public function batchPublish(array $messages)
+    {
+        for ($i = 0; $i < count($messages); $i += 10) {
+            $entries = array();
+            foreach(array_slice($messages, $i, 10) as $message) {
+                $entries[] = array_merge(
+                    array(
+                        'MessageBody' => $message['msgBody'],
+                    ),
+                    $this->getClientParams(@$message['additionalProperties'])
+                );
+            }
+            $this->client->sendMessageBatch(
+                array(
+                    'QueueUrl' => $this->queueUrl,
+                    'Entries' => $entries,
+                )
+            );
+        }
     }
 
     /**
