@@ -4,7 +4,6 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Kaliop\QueueingBundle\Queue\ConsumerInterface;
-use Kaliop\Queueing\Plugins\KinesisBundle\Service\SequenceNumberStoreInterface;
 use \Aws\Sqs\SqsClient;
 
 /**
@@ -57,8 +56,8 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * The number of messages to download in every request to the Kinesis API.
-     * Bigger numbers are better for performances, but there is a limit on the size of the response which Kinesis will send.
+     * The number of messages to download in every request to the SQS API.
+     * Bigger numbers are better for performances, but there is a limit on the size of the response which SQS will send.
      * @param int $amount
      * @return Consumer
      */
@@ -70,7 +69,7 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * @see http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.Kinesis.SqsClient.html#_getRecords
+     * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#receivemessage
      * Will throw an exception if $amount is > 10.000
      *
      * @param int $amount

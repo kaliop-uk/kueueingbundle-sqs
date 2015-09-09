@@ -18,7 +18,7 @@ use Kaliop\QueueingBundle\Queue\QueueManagerInterface;
  *
  * @todo add support for queue
  *
- * @see http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.Sqs.SqsClient.html
+ * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/class-Aws.Sqs.SqsClient.html
  */
 class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 {

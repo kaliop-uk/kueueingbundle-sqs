@@ -6,12 +6,19 @@ parameters:
         credentials:
             key: ""
             secret: ""
-        # @see http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.Common.Enum.Region.html
+        # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#region
         region: "us-east-1"
+        # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#version
         # NB: It is recommended to fix a specific version for production
         version: "latest"
         # to get even more debug info that is available via command line switches, use:
         #debug: true
+
+        # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#http
+        #http:
+        #    debug: true
+        #    proxy: ...
+
 
     # The number of messages to download in a single request to the sqs API.
     # Bigger numbers will give better performances, but the API is rate-limited: the size of a single response
