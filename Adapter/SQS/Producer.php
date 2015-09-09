@@ -5,9 +5,6 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 use Kaliop\QueueingBundle\Queue\ProducerInterface;
 use Aws\Sqs\SqsClient;
 
-/**
- * @todo add support for batch sending
- */
 class Producer implements ProducerInterface
 {
     /** @var  \Aws\Sqs\SqsClient */
@@ -49,7 +46,6 @@ class Producer implements ProducerInterface
      *
      * @todo support custom message attributes
      * @todo support custom delaySeconds
-     * @todo check how to handle failures: is an Exception thrown by the aws sdk?
      */
     public function publish($msgBody, $routingKey = '', $additionalProperties = array())
     {
@@ -65,15 +61,14 @@ class Producer implements ProducerInterface
     /**
      * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#sendmessagebatch
      * @param array $messages
-     *
-     * @todo we should check for error messages and possibly throw an error
      */
     public function batchPublish(array $messages)
     {
         $j = 0;
         for ($i = 0; $i < count($messages); $i += 10) {
             $entries = array();
-            foreach(array_slice($messages, $i, 10) as $message) {
+            $toSend = array_slice($messages, $i, 10);
+            foreach($toSend as $message) {
                 $entries[] = array_merge(
                     array(
                         'MessageBody' => $message['msgBody'],
@@ -83,12 +78,16 @@ class Producer implements ProducerInterface
                 );
             }
 
-            $this->client->sendMessageBatch(
+            $result = $this->client->sendMessageBatch(
                 array(
                     'QueueUrl' => $this->queueUrl,
                     'Entries' => $entries,
                 )
             );
+
+            if (($ok = count($result->get('Successful'))) != ($tot = count($toSend))) {
+                throw new \RuntimeException("Batch sending of messages failed - $ok ok out of $tot");
+            }
         }
     }
 
