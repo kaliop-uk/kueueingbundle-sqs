@@ -15,13 +15,13 @@ env:
   - SYMFONY_VERSION=2.4.*
   - SYMFONY_VERSION=2.6.*
   - SYMFONY_VERSION=2.7.*
+  # encrypte env vars to use for Symnfony config
+  - secure: "DOtXyW45LmbBaygQ2OyfSCfnrYtBjzTsfj7JS1OYP/mYARJxFVEARE6FKJADXD+kFnzHFy8Kq+4layAPVggI5pLCdsLS5UHnArliDbFRy7W4cPffBRL8HJc8Ay9d0YSv1YVD4d3zxsnmS3/80Zt6/MD23QfDpzclka5M+5YpMRkV73/YHKAgW7Keh9glzvZXr5ns5fFyDFW38ulOERH4EhQcTLLZBICgQZGaOhanIFyBoq9YyeUFI7GOHxS+sqfFvbT9TnnsaWTHnyMdtRvKoH3aiN0Dk6mVFrZWGTDAVkGPGz50iYT3Dwwker0Dh71x73NmnBA/Z1pnWrTW96BTnzi3GaTpcfraGuOHmGDsu4cWz41u3+66jFvypwYobjPBJCHB5vF5HmbCrXC1JrInEsitnbsU0fO37/QWqZzqAY7jX+2IXU93z/5K7TnqUdKyTeJPkHFi9l66vA8M3zPgVGzqq33AQ6GKy1XAgk0n29Mykxj0sgwKVdoq4BCtsYuIetnTUFgE4Z/w5zeUtpE7eIGEU9WUdoz5bhYoHME6p3eXF72KFkgOw+wK+MxZEzHUMMfdtRnDgx+xu2VHlfJezf+KH6awyy4="
 
 matrix:
   allow_failures:
     # at the moment it gives an error with Sf 2.6 and 2.7...
     - php: 7.0
-  # encrypte env vars to use for Symnfony config
-  secure: "DOtXyW45LmbBaygQ2OyfSCfnrYtBjzTsfj7JS1OYP/mYARJxFVEARE6FKJADXD+kFnzHFy8Kq+4layAPVggI5pLCdsLS5UHnArliDbFRy7W4cPffBRL8HJc8Ay9d0YSv1YVD4d3zxsnmS3/80Zt6/MD23QfDpzclka5M+5YpMRkV73/YHKAgW7Keh9glzvZXr5ns5fFyDFW38ulOERH4EhQcTLLZBICgQZGaOhanIFyBoq9YyeUFI7GOHxS+sqfFvbT9TnnsaWTHnyMdtRvKoH3aiN0Dk6mVFrZWGTDAVkGPGz50iYT3Dwwker0Dh71x73NmnBA/Z1pnWrTW96BTnzi3GaTpcfraGuOHmGDsu4cWz41u3+66jFvypwYobjPBJCHB5vF5HmbCrXC1JrInEsitnbsU0fO37/QWqZzqAY7jX+2IXU93z/5K7TnqUdKyTeJPkHFi9l66vA8M3zPgVGzqq33AQ6GKy1XAgk0n29Mykxj0sgwKVdoq4BCtsYuIetnTUFgE4Z/w5zeUtpE7eIGEU9WUdoz5bhYoHME6p3eXF72KFkgOw+wK+MxZEzHUMMfdtRnDgx+xu2VHlfJezf+KH6awyy4="
 
 before_install:
   # This is mandatory or 'apt-get install' calls following will fail
