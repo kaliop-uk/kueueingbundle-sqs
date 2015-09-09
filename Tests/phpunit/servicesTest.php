@@ -23,7 +23,6 @@ class servicesTest extends WebTestCase
         $container = $this->getContainer();
         $service = $container->get('kaliop_queueing.driver.sqs');
         $service = $container->get('kaliop_queueing.sqs.queue_manager');
-        $service = $container->get('kaliop_queueing.sqs.sequence_number_store');
         $service = $container->get('kaliop_queueing.sqs.producer');
         $service = $container->get('kaliop_queueing.sqs.consumer');
     }
