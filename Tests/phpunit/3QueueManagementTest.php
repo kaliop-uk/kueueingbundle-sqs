@@ -7,6 +7,6 @@ class QueueManagementTests extends SQSTest
     public function testListQueues()
     {
         $queueManager = $this->getDriver()->getQueueManager(null);
-        $this->asserContains($this->queueName, $queueManager->executeAction('list'));
+        $this->assertContains($this->queueName, $queueManager->executeAction('list'));
     }
 }
