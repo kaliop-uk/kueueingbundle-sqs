@@ -54,7 +54,6 @@ class Consumer implements ConsumerInterface
     {
         $this->routingKey = (string)$key;
         $this->routingKeyRegexp = '/'.str_replace(array('\*', '#'), array('[^.]*', '.*'), preg_quote($this->routingKey, '/')).'/';
-var_dump($this->routingKeyRegexp);
         return $this;
     }
 
