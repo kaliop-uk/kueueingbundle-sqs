@@ -5,6 +5,7 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Kaliop\QueueingBundle\Queue\ConsumerInterface;
 use \Aws\Sqs\SqsClient;
+use Psr\Log\LoggerInterface;
 
 /**
  * @todo support long polling
@@ -16,12 +17,23 @@ class Consumer implements ConsumerInterface
     protected $queueUrl;
     protected $callback;
     protected $requestBatchSize = 1;
+    protected $routingKey;
+    protected $routingKeyRegexp;
+    protected $logger;
     // The message attribute used to store content-type. To be kept in sync with the Producer
     protected $contentTypeAttribute = 'contentType';
+    protected $routingAttribute = 'routingKey';
 
     public function __construct(array $config)
     {
         $this->client = new SqsClient($config);
+    }
+
+    public function setLogger(LoggerInterface $logger = null)
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 
     /**
@@ -35,12 +47,14 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * Does nothing
      * @param string $key
      * @return Consumer
      */
     public function setRoutingKey($key)
     {
+        $this->routingKey = (string)$key;
+        $this->routingKeyRegexp = '/'.str_replace(array('\*', '#'), array('[^.]*', '.*'), preg_quote($this->routingKey, '/')).'/';
+var_dump($this->routingKeyRegexp);
         return $this;
     }
 
@@ -93,6 +107,14 @@ class Consumer implements ConsumerInterface
             if (is_array($messages)) {
                 foreach($messages as $message) {
 
+                    // How we implement routing keys with SQS: since it is not supported natively, we check if the route
+                    // matches after having downloaded the message. If it does not match, we just skip processing it.
+                    // Since we will not call deleteMessage, SQS will requeue the message in a short time.
+                    // This is far from optimal, but it might be better than nothing
+                    if (! $this->matchRoutingKey($message)) {
+                        continue;
+                    }
+
                     // removing the message from the queue is manual with SQS
                     $this->client->deleteMessage(array(
                         'QueueUrl' => $this->queueUrl,
@@ -121,6 +143,38 @@ class Consumer implements ConsumerInterface
                 usleep(200000 - $passedMs);
             }
         }
+    }
+
+    /**
+     * Adopt the RabbitMQ routing key algorithm:
+     * - split on dots
+     * - * matches one word (q: also empty ones?)
+     * - # matches any words
+     *
+     * @todo the current implementation is naive and does probably not match RabbitMq if the routing key is something like aaa.*b.ccc
+     *       A better implementation would probably involve usage of a trie
+     *       Some pointers on how to implement it fast: http://lists.rabbitmq.com/pipermail/rabbitmq-discuss/2011-June/013564.html
+     * @see setRoutingKey
+     *
+     * @param array $message
+     * @return bool
+     */
+    protected function matchRoutingKey(array $message)
+    {
+        if ($this->routingKey === null || $this->routingKey === '') {
+            return true;
+        }
+        if (!isset($message['MessageAttributes'][$this->routingAttribute]['StringValue'])) {
+            if ($this->logger) {
+                $this->logger->warning('The SQS Consumer has a routing key set, and it received a message without routing information. Processing it anyway');
+            }
+            return true;
+        }
+
+        return preg_match(
+            $this->routingKeyRegexp,
+            $message['MessageAttributes'][$this->routingAttribute]['StringValue']
+        );
     }
 
     /**

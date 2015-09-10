@@ -14,6 +14,7 @@ class Producer implements ProducerInterface
     protected $contentType = 'text/plain';
     // The message attribute used to store content-type. To be kept in sync with the Consumer
     protected $contentTypeAttribute = 'contentType';
+    protected $routingKeyAttribute = 'routingKey';
 
     /**
      * @param array $config - minimum seems to be: 'credentials', 'region', 'version'
@@ -54,7 +55,7 @@ class Producer implements ProducerInterface
                 'QueueUrl' => $this->queueUrl,
                 'MessageBody' => $msgBody,
             ),
-            $this->getClientParams($additionalProperties)
+            $this->getClientParams($routingKey, $additionalProperties)
         ));
     }
 
@@ -74,7 +75,7 @@ class Producer implements ProducerInterface
                         'MessageBody' => $message['msgBody'],
                         'Id' => $j++
                     ),
-                    $this->getClientParams(@$message['additionalProperties'])
+                    $this->getClientParams(@$message['routingKey'], @$message['additionalProperties'])
                 );
             }
 
@@ -105,14 +106,16 @@ class Producer implements ProducerInterface
 
     /**
      * Prepares the extra parameters to be injected into calls made via the SQS Client
+     * @param string $routingKey
      * @param array $additionalProperties
      * @return array
      */
-    protected function getClientParams(array $additionalProperties = array())
+    protected function getClientParams($routingKey = '', array $additionalProperties = array())
     {
         return array(
             'MessageAttributes' => array(
-                $this->contentTypeAttribute => array('StringValue' => $this->contentType, 'DataType' => 'String')
+                $this->contentTypeAttribute => array('StringValue' => $this->contentType, 'DataType' => 'String'),
+                $this->routingKeyAttribute => array('StringValue' => $routingKey, 'DataType' => 'String'),
             )
         );
     }

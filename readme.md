@@ -25,17 +25,17 @@ It has been given its own bundle because it has higher requirements than the bas
 6. Set up configuration according to your AWS account
 
     - edit parameters.yml in this bundle
- 
+
 7. check that you can list the stream, and the shards in it:
- 
+
         php app/console kaliop_queueing:managequeue list -isqs
-        
+
         php app/console kaliop_queueing:managequeue info -isqs <queue>
 
 8. push a message to the stream 
 
         php app/console kaliop_queueing:queuemessage -isqs <queue> <jsonpayload>
-        
+
 9. receive messages from the stream
 
         php app/console kaliop_queueing:consumer -isqs <queue>
@@ -43,7 +43,24 @@ It has been given its own bundle because it has higher requirements than the bas
 
 ## Notes
 
-* SQS does NOT support setting a per-message TTL, only a per-queue one, so all MessageProducers which do have a TTL
+* SQS does *not* natively support routing-keys the way that RabbitMQ does, nor the exchange/queue topology split.
+    This bundle *does* add back support for routing-keys, but it is far from ideal; you are encouraged to set up
+    multiple queues instead of using a single queue with multiple consumers which only consumed messages based on
+    routing keys, esp. if you transmit massive amounts of messages in parallel.
+    
+    The way the bundle supports routing keys is:
+
+    - if the Producer has a routing key set, it will add it to the Message Attributes when sending a Message
+    - every Consumer always asks for all messages available in the Queue
+    - if the Consumer has a routing key set, and the the message has one in its Message Attributes, the two are matched
+    - in case of a match, standard processing goes on: the Consumer sends an ACK call to SQS to signal message reception
+    - in case of no match, the Consumer does not send the ACK request to SQS; SQS will then wait for a little while, then
+      put the message back in the queue (the amount of time it waits can be configured per-queue)
+
+    If you find any discrepancy between the way routing keys are matched by RabbitMQ and by this bundle, please report
+    it as a bug.
+
+* SQS does *not* support setting a per-message TTL, only a per-queue one, so all MessageProducers which do have a TTL
     parameter in their public methods will just ignore it when being used with the SQS driver
 
 * SQS does *not* guarantee that messages are delivered in the same order they are sent.
@@ -51,6 +68,8 @@ It has been given its own bundle because it has higher requirements than the bas
 
 * SQS does guarantee that messages are delivered, but it does *not* guarantee that every message is delivered only once.
     If such a constraint is important, build unique message IDs in your app, and manage them. 
+
+* For a more in-depth comparison of SQS and RabbitMQ, see f.e. http://blog.turret.io/rabbitmq-vs-amazon-sqs-a-short-comparison/
 
 
 [![License](https://poser.pugx.org/kaliop/queueingbundle-sqs/license)](https://packagist.org/packages/kaliop/queueingbundle-sqs)
