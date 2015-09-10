@@ -8,7 +8,7 @@ use \Aws\Sqs\SqsClient;
 use Psr\Log\LoggerInterface;
 
 /**
- * @todo support long polling
+ * @todo support long polling - even though it will complicate consume() even more than it already is
  */
 class Consumer implements ConsumerInterface
 {
@@ -86,21 +86,33 @@ class Consumer implements ConsumerInterface
      * Will throw an exception if $amount is > 10.000
      *
      * @param int $amount
+     * @param int $timeout seconds
      * @return nothing
      */
-    public function consume($amount)
+    public function consume($amount, $timeout=0)
     {
         $limit = ($amount > 0) ? $amount : $this->requestBatchSize;
+        if ($timeout > 0) {
+            $startTime = time();
+            $remaining = $timeout;
+        }
+
+        $receiveParams = array(
+            'QueueUrl' => $this->queueUrl,
+            'MaxNumberOfMessages' => $limit,
+            'AttributeNames' => array('All'),
+            'MessageAttributeNames' => array('All')
+        );
 
         while(true) {
             $reqTime = microtime(true);
-            $result = $this->client->receiveMessage(array(
-                'QueueUrl' => $this->queueUrl,
-                'MaxNumberOfMessages' => $limit,
-                'AttributeNames' => array('All'),
-                'MessageAttributeNames' => array('All')
-            ));
 
+            if ($timeout > 0) {
+                // according to the spec, this is maximum wait time. If messages are available sooner, they get delivered immediately
+                $receiveParams['WaitTimeSeconds'] = $remaining;
+            }
+
+            $result = $this->client->receiveMessage($receiveParams);
             $messages = $result->get('Messages');
 
             if (is_array($messages)) {
@@ -132,6 +144,10 @@ class Consumer implements ConsumerInterface
             }
 
             if ($amount > 0) {
+                return;
+            }
+
+            if ($timeout > 0 && ($remaining = ($startTime + $timeout - time())) <= 0) {
                 return;
             }
 
