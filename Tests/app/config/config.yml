@@ -15,3 +15,9 @@ parameters:
     kaliop_queueing_sqs.default.consumers:
         "https://sqs.us-east-1.amazonaws.com/139046234059/travisTests":
             callback: kaliop_queueing.message_consumer.noop
+
+services:
+    kaliop_queueing.message_consumer.filter.accumulator:
+        class: %kaliop_queueing.message_consumer.filter.accumulator.class%
+        tags:
+             - { name: kaliop_queueing.event_listener, event: kaliop_queueing.message_consumed }

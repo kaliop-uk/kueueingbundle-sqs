@@ -41,6 +41,17 @@ It has been given its own bundle because it has higher requirements than the bas
         php app/console kaliop_queueing:consumer -isqs <queue>
 
 
+## Running tests
+
+If you want to run the testsuite outside of Travis, you will need to
+
+1. have an AWS SQS account with a queue named `travisTests`
+
+2. set the following environment variables: `SYMFONY__SQS__KEY` `SYMFONY__SQS__SECRET`
+
+3. run phpunit `Tests/phpunit`
+
+
 ## Notes
 
 * SQS does *not* natively support routing-keys the way that RabbitMQ does, nor the exchange/queue topology split.
