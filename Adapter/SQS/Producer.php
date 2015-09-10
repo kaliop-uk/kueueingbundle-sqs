@@ -112,12 +112,16 @@ class Producer implements ProducerInterface
      */
     protected function getClientParams($routingKey = '', array $additionalProperties = array())
     {
-        return array(
+        $result = array(
             'MessageAttributes' => array(
                 $this->contentTypeAttribute => array('StringValue' => $this->contentType, 'DataType' => 'String'),
-                $this->routingKeyAttribute => array('StringValue' => $routingKey, 'DataType' => 'String'),
             )
         );
+        if ($routingKey != '') {
+            $result['MessageAttributes'][$this->routingKeyAttribute] = array('StringValue' => $routingKey, 'DataType' => 'String');
+        }
+
+        return $result;
     }
 
     /**
