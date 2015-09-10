@@ -4,7 +4,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 abstract class SQSTest extends WebTestCase
 {
-    protected $queueName = 'https://sqs.us-east-1.amazonaws.com/139046234059';
+    protected $queueName = 'https://sqs.us-east-1.amazonaws.com/139046234059/travisTests';
 
     protected function setUp()
     {
