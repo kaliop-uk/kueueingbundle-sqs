@@ -43,36 +43,27 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 
     public function listActions()
     {
-        return array('info', 'list', 'delete');
+        return array('list', 'info', 'purge', 'delete');
     }
 
     public function executeAction($action)
     {
         switch ($action) {
-            case 'delete':
-                return $this->deleteQueue();
-
             case 'info':
                 return $this->queueInfo();
 
             case 'list':
                 return $this->listQueues();
 
+            case 'purge':
+                return $this->purgeQueue();
+
+            case 'delete':
+                return $this->deleteQueue();
+
             default:
                 throw new InvalidArgumentException("Action $action not supported");
         }
-    }
-
-    protected function deleteQueue()
-    {
-        $result = $this->getProducerService()->call('DeleteQueue', array('QueueUrl' => $this->streamName));
-        return $result['@metadata'];
-    }
-
-    protected function queueInfo()
-    {
-        $result = $this->getProducerService()->call('getQueueAttributes', array('QueueUrl' => $this->streamName, 'AttributeNames' => array('All')));
-        return $result->get('Attributes');
     }
 
     protected function listQueues()
@@ -84,6 +75,24 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
             $result = array();
         }
         return $result;
+    }
+
+    protected function queueInfo()
+    {
+        $result = $this->getProducerService()->call('getQueueAttributes', array('QueueUrl' => $this->streamName, 'AttributeNames' => array('All')));
+        return $result->get('Attributes');
+    }
+
+    protected function purgeQueue()
+    {
+        $result = $this->getProducerService()->call('PurgeQueue', array('QueueUrl' => $this->streamName));
+        return $result['@metadata'];
+    }
+
+    protected function deleteQueue()
+    {
+        $result = $this->getProducerService()->call('DeleteQueue', array('QueueUrl' => $this->streamName));
+        return $result['@metadata'];
     }
 
     protected function getProducerService()
