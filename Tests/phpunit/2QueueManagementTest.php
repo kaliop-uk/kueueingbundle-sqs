@@ -20,7 +20,7 @@ class QueueManagementTests extends SQSTest
     {
         $queueManager = $this->getQueueManager();
         // in case this test is run just after another one
-        sleep(60);
+        sleep(65);
         $this->assertContains($this->getQueueName(), $queueManager->executeAction('purge'));
     }
 }

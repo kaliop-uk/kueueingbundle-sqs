@@ -54,7 +54,7 @@ abstract class SQSTest extends WebTestCase
      */
     protected function purgeQueue()
     {
-        sleep(60);
+        sleep(65);
         $this->getQueueManager()->executeAction('purge');
     }
 }
