@@ -4,6 +4,7 @@ require_once(__DIR__.'/SQSTest.php');
 
 /**
  * @todo since queue purge has to wait 60 secs, it might be faster to create and tear down a new queue for each test...
+ *       It is also a good idea to do that to be sure that Travis tests do not interfere with tests running locally
  */
 class MessagesTest extends SQSTest
 {
@@ -18,7 +19,7 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"world"}');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $this->getConsumer()->consume(1);
+        $this->getConsumer()->consume(1, $this->timeout);
         $this->assertContains('world', $accumulator->getConsumptionResult());
     }
 
@@ -35,6 +36,9 @@ class MessagesTest extends SQSTest
 
         $consumer->setRoutingkey('hello.world')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
+
+        // we need to wait at least as long as the default Visibility Timeout
+        sleep(30);
 
         $consumer->setRoutingkey('bonjour.monde')->consume(1, $this->timeout);
         $this->assertContains('fre', $accumulator->getConsumptionResult());
@@ -78,8 +82,11 @@ class MessagesTest extends SQSTest
         $consumer->setRoutingkey('#.world')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
 
+        // we need to wait at least as long as the default Visibility Timeout
+        sleep(30);
+
         // this could give us back either message, as order of delivery is not guaranteed
-        $consumer->setRoutingkey('#')->consume(1, $this->timeout);
+        $consumer->setRoutingkey('#')->consume(2, $this->timeout);
         $this->assertThat(
             $accumulator->getConsumptionResult(),
             $this->logicalOr(

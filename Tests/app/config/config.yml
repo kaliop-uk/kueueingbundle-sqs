@@ -17,6 +17,7 @@ parameters:
             callback: kaliop_queueing.message_consumer.noop
 
 services:
+    # enable the accumulator listener
     kaliop_queueing.message_consumer.filter.accumulator:
         class: %kaliop_queueing.message_consumer.filter.accumulator.class%
         tags:
