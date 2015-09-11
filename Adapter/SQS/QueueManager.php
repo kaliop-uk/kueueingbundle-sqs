@@ -46,7 +46,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
         return array('list', 'info', 'purge', 'delete');
     }
 
-    public function executeAction($action)
+    public function executeAction($action, array $arguments=array())
     {
         switch ($action) {
             case 'info':
