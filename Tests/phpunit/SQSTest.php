@@ -118,7 +118,7 @@ abstract class SQSTest extends WebTestCase
 
         $buildId .= '_' . self::$queueCounter;
         self::$queueCounter++;
-        return $buildId;
+        return str_replace( '.', '_', $buildId );
     }
 
 }
