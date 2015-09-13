@@ -45,14 +45,14 @@ class KaliopQueueingPluginsSQSExtension extends Extension
 
             $pDefinition = new Definition('%kaliop_queueing.sqs.producer.class%', array($this->config['connections'][$consumer['connection']]));
             $pDefinition
-                ->addMethodCall('setQueueName', array($consumer['queue_options']['name']))
+                ->addMethodCall('setQueueUrl', array($consumer['queue_options']['name']))
             ;
             $name = sprintf('kaliop_queueing.sqs.%s_producer', $key);
             $this->container->setDefinition($name, $pDefinition);
 
             $cDefinition = new Definition('%kaliop_queueing.sqs.consumer.class%', array($this->config['connections'][$consumer['connection']]));
             $cDefinition
-                ->addMethodCall('setQueueName', array($consumer['queue_options']['name']))
+                ->addMethodCall('setQueueUrl', array($consumer['queue_options']['name']))
                 ->addMethodCall('setCallback', array(new Reference($consumer['callback'])));
             ;
             if (count($consumer['queue_options']['routing_keys'])) {

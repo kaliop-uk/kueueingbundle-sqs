@@ -81,6 +81,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
     }
 
     /**
+     * NB: works only after the relevant config has been set in yml, which makes it less than ideal...
      * @param $args allowed elements: see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#createqueue
      * @return the queue Url
      * @throw \Exception on failure
@@ -103,7 +104,8 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
      */
     protected function queueInfo()
     {
-        $result = $this->getProducerService()->call('getQueueAttributes', array('QueueUrl' => $this->queueName, 'AttributeNames' => array('All')));
+        $producer = $this->getProducerService();
+        $result = $producer->call('getQueueAttributes', array('QueueUrl' => $producer->getQueueUrl(), 'AttributeNames' => array('All')));
         return $result->get('Attributes');
     }
 
@@ -113,7 +115,8 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
      */
     protected function purgeQueue()
     {
-        $result = $this->getProducerService()->call('PurgeQueue', array('QueueUrl' => $this->queueName));
+        $producer = $this->getProducerService();
+        $result = $producer->call('PurgeQueue', array('QueueUrl' => $producer->getQueueUrl()));
         return $result['@metadata'];
     }
 
@@ -123,12 +126,13 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
      */
     protected function deleteQueue()
     {
-        $result = $this->getProducerService()->call('DeleteQueue', array('QueueUrl' => $this->queueName));
+        $producer = $this->getProducerService();
+        $result = $producer->call('DeleteQueue', array('QueueUrl' => $producer->getQueueUrl()));
         return $result['@metadata'];
     }
 
     protected function getProducerService()
     {
-        return $this->container->get('kaliop_queueing.sqs.producer');
+        return $this->container->get('kaliop_queueing.sqs.'. $this->queueName . '_producer');
     }
 }
