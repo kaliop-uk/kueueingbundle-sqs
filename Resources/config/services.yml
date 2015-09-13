@@ -18,12 +18,12 @@ services:
         calls:
             - [ setContainer, [ @service_container ] ]
 
-    kaliop_queueing.sqs.producer:
-        class: %kaliop_queueing.sqs.producer.class%
-        arguments: [ %kaliop_queueing_sqs.default.client_config% ]
+    #kaliop_queueing.sqs.producer:
+    #    class: %kaliop_queueing.sqs.producer.class%
+    #    arguments: [ %kaliop_queueing_sqs.default.client_config% ]
 
-    kaliop_queueing.sqs.consumer:
-        class: %kaliop_queueing.sqs.consumer.class%
-        arguments: [ %kaliop_queueing_sqs.default.client_config% ]
-        calls:
-            - [ setRequestBatchSize, [ %kaliop_queueing_sqs.default.request_batch_size% ] ]
+    #kaliop_queueing.sqs.consumer:
+    #    class: %kaliop_queueing.sqs.consumer.class%
+    #    arguments: [ %kaliop_queueing_sqs.default.client_config% ]
+    #    calls:
+    #        - [ setRequestBatchSize, [ %kaliop_queueing_sqs.default.request_batch_size% ] ]

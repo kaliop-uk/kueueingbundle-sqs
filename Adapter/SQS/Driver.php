@@ -25,12 +25,13 @@ class Driver extends ContainerAware implements DriverInterface
      */
     public function getConsumer($queueName, MessageConsumerInterface $callback = null)
     {
-        $consumer = $this->container->get('kaliop_queueing.sqs.consumer');
+        $consumer = $this->container->get("kaliop_queueing.sqs.{$queueName}_consumer");
+        /*$consumer = $this->container->get('kaliop_queueing.sqs.consumer');
         $consumer->setQueueName($queueName);
         if ($callback == null) {
             $callback = $this->getQueueCallbackFromConfig($queueName);
         }
-        $consumer->setCallback($callback);
+        $consumer->setCallback($callback);*/
         return $consumer;
     }
 
@@ -66,8 +67,9 @@ class Driver extends ContainerAware implements DriverInterface
      */
     public function getProducer($queueName)
     {
-        $producer = $this->container->get('kaliop_queueing.sqs.producer');
-        $producer->setQueueName($queueName);
+
+        $producer = $this->container->get("kaliop_queueing.sqs.{$queueName}_producer");
+        //$producer->setQueueName($queueName);
         return $producer;
     }
 

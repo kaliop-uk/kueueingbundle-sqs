@@ -27,7 +27,7 @@ class Producer implements ProducerInterface
     }
 
     /**
-     * @param string $queueName
+     * @param string $queueName the complete queue name as used by SQS
      * @return Producer
      * @todo test that we can successfully send messages to 2 queues using the same SqsClient
      */

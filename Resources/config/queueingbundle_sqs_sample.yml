@@ -14,7 +14,6 @@ kaliop_queueing_sqs:
             version: "latest"
             # to get even more debug info that is available via command line switches, use:
             #debug: true
-
             # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#http
             #http:
             #    debug: true
@@ -23,6 +22,7 @@ kaliop_queueing_sqs:
     queues:
         # name as used by console commands
         console_command_queue:
+            connection: default
             queue_options:
                 # name of the queue on AWS SQS
                 name: https://sqs.us-east-1.amazonaws.com/139046234059/ConsoleCommandQueue

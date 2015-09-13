@@ -12,7 +12,7 @@ class Configuration implements ConfigurationInterface
     {
         $tree = new TreeBuilder();
 
-        $rootNode = $tree->root('kaliop_queueing_sqs');
+        $rootNode = $tree->root('kaliop_queueing_plugins_sqs');
 
         $this->addConnections($rootNode);
         $this->addQueues($rootNode);
@@ -30,18 +30,18 @@ class Configuration implements ConfigurationInterface
                     ->canBeUnset()
                     ->prototype('array')
                         ->children()
-                            ->arrayNode('credentials')
-                                //->useAttributeAsKey('key')
-                                //->canBeUnset()
-                                //->prototype('variable')->end()
+                            ->variableNode('credentials')
+                                //->children()
+                                //->whatever...
+                                //->end()
                             ->end()
                             ->scalarNode('region')->isRequired()->end()
                             ->scalarNode('version')->defaultValue('latest')->end()
                             ->booleanNode('debug')->defaultFalse()->end()
-                            ->arrayNode('https')
-                                //->useAttributeAsKey('key')
-                                //->canBeUnset()
-                                //->prototype('variable')->end()
+                            ->variableNode('http')
+                                //->children()
+                                    //->whatever...
+                                //->end()
                             ->end()
                         ->end()
                     ->end()
