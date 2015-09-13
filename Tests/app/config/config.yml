@@ -12,9 +12,9 @@ parameters:
         region: "us-east-1"
         version: "latest"
 
-    kaliop_queueing_sqs.default.consumers:
-        "https://sqs.us-east-1.amazonaws.com/139046234059/travisTests":
-            callback: kaliop_queueing.message_consumer.noop
+    #kaliop_queueing_sqs.default.consumers:
+    #    "https://sqs.us-east-1.amazonaws.com/139046234059/travisTests":
+    #        callback: kaliop_queueing.message_consumer.noop
 
 services:
     # enable the accumulator listener

@@ -3,6 +3,7 @@
 namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Adapter\DriverInterface;
+use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Symfony\Component\DependencyInjection\ContainerAware;
 
 /**
@@ -12,16 +13,28 @@ class Driver extends ContainerAware implements DriverInterface
 {
     protected $debug;
 
-    public function getConsumer($queueName)
+    /**
+     * This method is more flexible than what is declared in the interface, as it allows direct injection of a callback
+     * by the caller instead of relying solely on service configuration.
+     * It helps when queues are created dynamically.
+     *
+     * @param string $queueName
+     * @param MessageConsumerInterface|null $callback when null, the appropriate MessageConsumer for the queue is looked
+     *                                                up in service configuration
+     * @return object
+     */
+    public function getConsumer($queueName, MessageConsumerInterface $callback = null)
     {
         $consumer = $this->container->get('kaliop_queueing.sqs.consumer');
-        $callback = $this->getQueueCallback($queueName);
         $consumer->setQueueName($queueName);
+        if ($callback == null) {
+            $callback = $this->getQueueCallbackFromConfig($queueName);
+        }
         $consumer->setCallback($callback);
         return $consumer;
     }
 
-    protected function getQueueCallback($queueName)
+    protected function getQueueCallbackFromConfig($queueName)
     {
         $callbacks = $this->container->getParameter('kaliop_queueing_sqs.default.consumers');
         if (!isset($callbacks[$queueName]) || !isset($callbacks[$queueName]['callback'])) {

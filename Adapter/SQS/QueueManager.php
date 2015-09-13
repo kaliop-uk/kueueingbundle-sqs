@@ -82,7 +82,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 
     /**
      * @param $args allowed elements: see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#createqueue
-     * @return array
+     * @return the queue Url
      * @throw \Exception on failure
      */
     protected function createQueue($args)
@@ -94,7 +94,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
                 'Attributes' => $args
             )
         );
-        return $result['@metadata'];
+        return $result->get('QueueUrl');
     }
 
     /**

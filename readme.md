@@ -26,17 +26,17 @@ It has been given its own bundle because it has higher requirements than the bas
 
     - edit parameters.yml in this bundle
 
-7. check that you can list the stream, and the shards in it:
+7. check that you can list the queue:
 
         php app/console kaliop_queueing:managequeue list -isqs
 
         php app/console kaliop_queueing:managequeue info -isqs <queue>
 
-8. push a message to the stream 
+8. push a message to the queue
 
         php app/console kaliop_queueing:queuemessage -isqs <queue> <jsonpayload>
 
-9. receive messages from the stream
+9. receive messages from the queue
 
         php app/console kaliop_queueing:consumer -isqs <queue>
 
@@ -45,11 +45,11 @@ It has been given its own bundle because it has higher requirements than the bas
 
 If you want to run the testsuite outside of Travis, you will need to
 
-1. have an AWS SQS account with a queue named `travisTests`
+1. have an AWS SQS account
 
 2. set the following environment variables: `SYMFONY__SQS__KEY` `SYMFONY__SQS__SECRET`
 
-3. run phpunit `Tests/phpunit`
+3. run `phpunit Tests/phpunit`
 
 
 ## Notes

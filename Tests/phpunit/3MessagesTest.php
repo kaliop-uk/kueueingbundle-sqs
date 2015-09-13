@@ -3,8 +3,7 @@
 require_once(__DIR__.'/SQSTest.php');
 
 /**
- * @todo since queue purge has to wait 60 secs, it might be faster to create and tear down a new queue for each test...
- *       It is also a good idea to do that to be sure that Travis tests do not interfere with tests running locally
+ * @todo It seems that there are still random failures in all 'receive'
  */
 class MessagesTest extends SQSTest
 {
@@ -13,26 +12,26 @@ class MessagesTest extends SQSTest
 
     public function testSendAndReceiveMessage()
     {
-        $this->purgeQueue();
+        $this->createQueue();
 
         $msgProducer = $this->getMsgProducer('kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"world"}');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $this->getConsumer()->consume(1, $this->timeout);
+        $this->getConsumer('kaliop_queueing.message_consumer.noop')->consume(1, $this->timeout);
         $this->assertContains('world', $accumulator->getConsumptionResult());
     }
 
     public function testSendAndReceiveMessageWithRouting()
     {
-        $this->purgeQueue();
+        $this->createQueue();
 
         $msgProducer = $this->getMsgProducer('kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $consumer = $this->getConsumer();
+        $consumer = $this->getConsumer('kaliop_queueing.message_consumer.noop');
 
         $consumer->setRoutingkey('hello.world')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
@@ -46,7 +45,7 @@ class MessagesTest extends SQSTest
 
     public function testSendAndReceiveMessageWithRoutingWildcard()
     {
-        $this->purgeQueue();
+        $this->createQueue();
 
         $msgProducer = $this->getMsgProducer('kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
@@ -54,18 +53,18 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $consumer = $this->getConsumer();
-
-        $consumer->setRoutingkey('hello.*')->consume(1, $this->timeout);
-        $this->assertContains('eng', $accumulator->getConsumptionResult());
+        $consumer = $this->getConsumer('kaliop_queueing.message_consumer.noop');
 
         $consumer->setRoutingkey('*.world')->consume(1, $this->timeout);
+        $this->assertContains('eng', $accumulator->getConsumptionResult());
+
+        $consumer->setRoutingkey('hello.*')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
     }
 
     public function testSendAndReceiveMessageWithRoutingHash()
     {
-        $this->purgeQueue();
+        $this->createQueue();
 
         $msgProducer = $this->getMsgProducer('kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
@@ -74,7 +73,7 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $consumer = $this->getConsumer();
+        $consumer = $this->getConsumer('kaliop_queueing.message_consumer.noop');
 
         $consumer->setRoutingkey('hello.#')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
