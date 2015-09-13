@@ -1,0 +1,35 @@
+
+kaliop_queueing_sqs:
+
+    connections:
+        default:
+            credentials:
+                key: ""
+                secret: ""
+            # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#region
+            region: "us-east-1"
+            # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#version
+            # NB: It is recommended to fix a specific version for production
+            #     The current version of the API is: 2012-11-05
+            version: "latest"
+            # to get even more debug info that is available via command line switches, use:
+            #debug: true
+
+            # @see http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/configuration.html#http
+            #http:
+            #    debug: true
+            #    proxy: ...
+
+    queues:
+        # name as used by console commands
+        console_command_queue:
+            queue_options:
+                # name of the queue on AWS SQS
+                name: https://sqs.us-east-1.amazonaws.com/139046234059/ConsoleCommandQueue
+                # Routing keys available on this queue are the command to be executed, with doublecolon replaced by dots
+                # A hash sign is a widlcard, while a star matches one word only
+                # Ex: kaliop.# matches all commands starting with 'kaliop:'
+                # NB take extra care about securing your environment when you allow execution of commands sent from remote hosts
+                routing_keys: [ '#' ]
+            # the name of the callback is fixed
+            callback: kaliop_queueing.message_consumer.console_command

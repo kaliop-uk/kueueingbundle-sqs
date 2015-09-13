@@ -14,6 +14,8 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class KaliopQueueingPluginsSQSExtension extends Extension
 {
+    protected $config = array();
+
     /**
      * {@inheritDoc}
      */
@@ -22,5 +24,19 @@ class KaliopQueueingPluginsSQSExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
         $loader->load('parameters.yml');
+
+        $configuration = new Configuration();
+        $this->config = $this->processConfiguration($configuration, $configs);
+
+        $this->loadConnections();
+        $this->loadQueues();
+    }
+
+    protected function loadConnections()
+    {
+    }
+
+    protected function loadQueues()
+    {
     }
 }
