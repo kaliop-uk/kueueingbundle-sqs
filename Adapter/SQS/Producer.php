@@ -4,13 +4,14 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Queue\ProducerInterface;
 use Aws\Sqs\SqsClient;
+use Aws\TraceMiddleware;
 
 class Producer implements ProducerInterface
 {
     /** @var  \Aws\Sqs\SqsClient */
     protected $client;
     protected $queueUrl;
-    protected $debug;
+    protected $debug = false;
     protected $contentType = 'text/plain';
     // The message attribute used to store content-type. To be kept in sync with the Consumer
     protected $contentTypeAttribute = 'contentType';
@@ -24,6 +25,26 @@ class Producer implements ProducerInterface
     public function __construct(array $config)
     {
         $this->client = new SqsClient($config);
+    }
+
+    /**
+     * Enabled debug. At the moment can not disable it
+     *
+     * @param $debug
+     * @return $this
+     *
+     * @todo test if using $handlerList->removeByInstance we can disable debug as well
+     */
+    public function setDebug($debug) {
+        if ($debug == $this->debug) {
+            return $this;
+        }
+        if ($debug) {
+            $handlerList = $this->client->getHandlerList();
+            $handlerList->interpose(new TraceMiddleware($debug === true ? [] : $debug));
+        }
+
+        return $this;
     }
 
     /**

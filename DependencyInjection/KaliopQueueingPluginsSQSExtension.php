@@ -19,6 +19,7 @@ class KaliopQueueingPluginsSQSExtension extends Extension
 {
     protected $config = array();
     protected $container;
+    protected $queueManagerService = 'kaliop_queueing.sqs.queue_manager';
 
     /**
      * {@inheritDoc}
@@ -48,6 +49,11 @@ class KaliopQueueingPluginsSQSExtension extends Extension
 
     protected function loadQueues()
     {
+        $qmDefinition = null;
+        if ($this->container->hasDefinition($this->queueManagerService)) {
+            $qmDefinition = $this->container->findDefinition($this->queueManagerService);
+        }
+
         foreach ($this->config['queues'] as $key => $consumer) {
             if (!isset($this->config['connections'][$consumer['connection']])) {
                 throw new \RuntimeException("SQS queue '$key' can not use connection '{$consumer['connection']}' because it is not defined in the connections section");
@@ -68,6 +74,9 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             if (count($consumer['queue_options']['routing_keys'])) {
                 $cDefinition->addMethodCall('setRoutingKey', array(reset($consumer['queue_options']['routing_keys'])));
             }
+            if ($consumer['queue_options']['max_messages_per_request'] > 1) {
+                $cDefinition->addMethodCall('setRequestBatchSize', array($consumer['queue_options']['max_messages_per_request']));
+            }
 
             $name = sprintf('kaliop_queueing.sqs.%s_consumer', $key);
             $this->container->setDefinition($name, $cDefinition);
@@ -75,6 +84,10 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             //if (!$consumer['auto_setup_fabric']) {
             //    $definition->addMethodCall('disableAutoSetupFabric');
             //}
+
+            if ($qmDefinition) {
+                $qmDefinition->addMethodCall('registerQueue', array($key));
+            }
         }
     }
 }
