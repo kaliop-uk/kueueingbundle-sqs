@@ -3,18 +3,19 @@
 framework:
     secret: "ThisIsNotSoSercretSoWeTestIt"
 
-parameters:
-    kaliop_queueing_sqs.default.client_config:
-        credentials:
-            # these variables are injected from envionment variables, stored encrypted in travis.yml
-            key: "%sqs.key%"
-            secret: "%sqs.secret%"
-        region: "us-east-1"
-        version: "latest"
+kaliop_queueing_plugins_sqs:
 
-    #kaliop_queueing_sqs.default.consumers:
-    #    "https://sqs.us-east-1.amazonaws.com/139046234059/travisTests":
-    #        callback: kaliop_queueing.message_consumer.noop
+    connections:
+        default:
+            credentials:
+                # these variables are injected from envionment variables, stored encrypted in travis.yml
+                key: "%sqs.key%"
+                secret: "%sqs.secret%"
+            region: "us-east-1"
+            version: "latest"
+
+    queues:
+
 
 services:
     # enable the accumulator listener

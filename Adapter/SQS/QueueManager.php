@@ -12,7 +12,7 @@ use Kaliop\QueueingBundle\Queue\QueueManagerInterface;
 /**
  * A class dedicated to sending control commands
  *
- * @todo add support for queue
+ * @todo add support for listing configured queues
  *
  * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/class-Aws.Sqs.SqsClient.html
  */
@@ -39,13 +39,13 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 
     public function listActions()
     {
-        return array('list', 'create', 'info', 'purge', 'delete');
+        return array('list-available', 'create', 'info', 'purge', 'delete');
     }
 
     public function executeAction($action, array $arguments=array())
     {
         switch ($action) {
-            case 'list':
+            case 'list-available':
                 return $this->listQueues();
 
             case 'create':
@@ -82,6 +82,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 
     /**
      * NB: works only after the relevant config has been set in yml, which makes it less than ideal...
+     *     See how the SQSTest does to dynamically create both the queue on the broker and the porducer + consumer
      * @param $args allowed elements: see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#createqueue
      * @return the queue Url
      * @throw \Exception on failure

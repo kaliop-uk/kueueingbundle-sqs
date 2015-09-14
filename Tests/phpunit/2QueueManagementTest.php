@@ -11,24 +11,29 @@ class QueueManagementTests extends SQSTest
 
     public function testListQueues()
     {
-        $queueManager = $this->getDriver()->getQueueManager(null);
-        $this->assertArrayHasKey($this->getQueueName(), $queueManager->executeAction('list'));
+        $queueName = $this->CreateQueue();
+        $queueManager = $this->getDriver()->getQueueManager($queueName);
+        $producer = $this->getDriver()->getProducer($queueName);
+        $this->assertArrayHasKey($producer->getQueueUrl(), $queueManager->executeAction('list-available'));
     }
 
     public function testQueueInfo()
     {
-        $queueManager = $this->getQueueManager();
+        $queueName = $this->CreateQueue();
+        $queueManager = $this->getQueueManager($queueName);
         $this->assertArrayHasKey('QueueArn', $queueManager->executeAction('info'));
     }
 
     public function testQueuePurge()
     {
-        $queueManager = $this->getQueueManager();
-        $this->assertContains($this->getQueueName(), $queueManager->executeAction('purge'));
+        $queueName = $this->CreateQueue();
+        $queueManager = $this->getQueueManager($queueName);
+        $this->assertInternalType('array', $queueManager->executeAction('purge'));
     }
 
     public function testQueueDelete()
     {
-        $this->assertInternalType('array', self::removeQueue());
+        $queueName = $this->CreateQueue();
+        $this->assertInternalType('array', $this->removeQueue($queueName));
     }
 }

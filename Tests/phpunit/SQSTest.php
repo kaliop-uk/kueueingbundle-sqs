@@ -5,7 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 abstract class SQSTest extends WebTestCase
 {
     static protected $queueCounter = 1;
-    static protected $currentQueueName = '';
+    protected $createdQueues = array();
 
     protected function setUp()
     {
@@ -15,25 +15,19 @@ abstract class SQSTest extends WebTestCase
         $options = array();
         static::$kernel = static::createKernel($options);
         static::$kernel->boot();
+
+        $this->createdQueues = array();
     }
 
     protected function tearDown()
     {
-        if (null !== static::$kernel) {
-            static::$kernel->shutdown();
-            static::$kernel = null;
+        if (count($this->createdQueues)) {
+            foreach(array_keys($this->createdQueues) as $queueName) {
+                $this->removeQueue($queueName);
+            }
         }
-    }
 
-    /**
-     * In case some test forgets to delete down a queue it created
-     */
-    public static function tearDownAfterClass()
-    {
-        if (self::$currentQueueName != '') {
-            static::$kernel = static::createKernel(array());
-            static::$kernel->boot();
-            self::removeQueue();
+        if (null !== static::$kernel) {
             static::$kernel->shutdown();
             static::$kernel = null;
         }
@@ -44,69 +38,66 @@ abstract class SQSTest extends WebTestCase
         return static::$kernel->getContainer();
     }
 
-    protected function getQueueName()
-    {
-        return self::$currentQueueName;
-    }
-
     protected function getDriver()
     {
         return $this->getContainer()->get('kaliop_queueing.drivermanager')->getDriver('sqs');
     }
 
-    protected function getQueueManager()
+    protected function getQueueManager($queueName)
     {
-        return $this->getDriver()->getQueueManager(self::$currentQueueName);
+        return $this->getDriver()->getQueueManager($queueName);
     }
 
-    protected function getConsumer($msgConsumer = null)
+    protected function getConsumer($queueName, $msgConsumer = null)
     {
+        $consumer = $this->getDriver()->getConsumer($queueName);
         if (is_string($msgConsumer)) {
-            $msgConsumer = $this->getContainer()->get($msgConsumer);
+            $consumer->setCallback($this->getContainer()->get($msgConsumer));
         }
-        return $this->getDriver()->getConsumer(self::$currentQueueName, $msgConsumer);
+        return $consumer;
     }
 
-    protected function getMsgProducer($msgProducerServiceId)
+    protected function getMsgProducer($queueName, $msgProducerServiceId)
     {
         return $this->getContainer()->get($msgProducerServiceId)
             ->setDriver($this->getDriver())
-            ->setQueueName(self::$currentQueueName)
+            ->setQueueName($queueName)
         ;
     }
 
     /**
-     * Annoyingly static, as it is called by tearDownAfterClass
+     * @param string $queueName
+     * @return null|array
      */
-    protected static function removeQueue()
+    protected function removeQueue($queueName)
     {
-        $result = null;
-        if (self::$currentQueueName != '') {
-            $result = static::$kernel->
-                getContainer()->
-                get('kaliop_queueing.drivermanager')->
-                getDriver('sqs')->
-                getQueueManager(self::$currentQueueName)->
-                executeAction('delete');
-            self::$currentQueueName = null;
-        }
-        return $result;
+        unset($this->createdQueues[$queueName]);
+        return static::$kernel->
+            getContainer()->
+            get('kaliop_queueing.drivermanager')->
+            getDriver('sqs')->
+            getQueueManager($queueName)->
+            executeAction('delete');
     }
 
-    protected function createQueue($removePrevious = true)
+    protected function createQueue()
     {
-        if ($removePrevious) {
-            self::removeQueue();
-        }
+        $queueName = $this->getNewQueueName();
+        $driver = $this->getDriver();
 
-        // weird 2 lines in a row, but not a bug
-        self::$currentQueueName = $this->getNewQueueName();
-        self::$currentQueueName = $this->getQueueManager()->executeAction('create');
+        // tricky bit: create the queue, as well as a producer and consumer. But to create the queue, we need a producer first!
+        $driver->createProducer($queueName, null, 'default');
+        $queueUrl = $driver->getQueueManager($queueName)->executeAction('create');
+        $driver->getProducer($queueName)->setQueueUrl($queueUrl);
+        $driver->createConsumer($queueName, $queueUrl, 'default');
+
+        // save the id of the created queue
+        $this->createdQueues[$queueName] = time();
 
         // give SQS a little time for the queue to propagate properly (better would be possibly to execute a 'list' call)
-        sleep(5);
+        sleep(10);
 
-        return self::$currentQueueName;
+        return $queueName;
     }
 
     protected function getNewQueueName()

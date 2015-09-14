@@ -33,7 +33,17 @@ class KaliopQueueingPluginsSQSExtension extends Extension
         $configuration = new Configuration();
         $this->config = $this->processConfiguration($configuration, $configs);
 
+        $this->loadConnections();
         $this->loadQueues();
+    }
+
+    protected function loadConnections()
+    {
+        // this is not so much a loading as a 'store definition for later access', really
+        $definition = $this->container->findDefinition('kaliop_queueing.driver.sqs');
+        foreach ($this->config['connections'] as $key => $def) {
+            $definition->addMethodCall('registerConnection', array($key, $def));
+        }
     }
 
     protected function loadQueues()

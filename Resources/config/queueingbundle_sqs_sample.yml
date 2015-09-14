@@ -1,5 +1,5 @@
 
-kaliop_queueing_sqs:
+kaliop_queueing_plugins_sqs:
 
     connections:
         default:

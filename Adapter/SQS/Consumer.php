@@ -196,7 +196,7 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * @param string $queueName the complete queue name as used by SQS
+     * @param string $queueUrl the complete queue name as used by SQS
      * @return Consumer
      */
     public function setQueueUrl($queueUrl)

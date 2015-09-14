@@ -5,6 +5,7 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 use Kaliop\QueueingBundle\Adapter\DriverInterface;
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Symfony\Component\DependencyInjection\ContainerAware;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @todo inject Debug flag in both consumers and producers
@@ -12,6 +13,17 @@ use Symfony\Component\DependencyInjection\ContainerAware;
 class Driver extends ContainerAware implements DriverInterface
 {
     protected $debug;
+    protected $connections;
+
+    /**
+     * @param string $queueName
+     * @return \Kaliop\QueueingBundle\Queue\ProducerInterface
+     */
+    public function getProducer($queueName)
+    {
+
+        return $this->container->get("kaliop_queueing.sqs.{$queueName}_producer");
+    }
 
     /**
      * This method is more flexible than what is declared in the interface, as it allows direct injection of a callback
@@ -25,23 +37,7 @@ class Driver extends ContainerAware implements DriverInterface
      */
     public function getConsumer($queueName, MessageConsumerInterface $callback = null)
     {
-        $consumer = $this->container->get("kaliop_queueing.sqs.{$queueName}_consumer");
-        /*$consumer = $this->container->get('kaliop_queueing.sqs.consumer');
-        $consumer->setQueueName($queueName);
-        if ($callback == null) {
-            $callback = $this->getQueueCallbackFromConfig($queueName);
-        }
-        $consumer->setCallback($callback);*/
-        return $consumer;
-    }
-
-    protected function getQueueCallbackFromConfig($queueName)
-    {
-        $callbacks = $this->container->getParameter('kaliop_queueing_sqs.default.consumers');
-        if (!isset($callbacks[$queueName]) || !isset($callbacks[$queueName]['callback'])) {
-            throw new \UnexpectedValueException("No callback has been defined for queue '$queueName', please check config parameter 'kaliop_queueing_sqs.default.consumers'");
-        }
-        return $this->container->get($callbacks[$queueName]['callback']);
+        return $this->container->get("kaliop_queueing.sqs.{$queueName}_consumer");
     }
 
     public function acceptMessage($message)
@@ -63,18 +59,6 @@ class Driver extends ContainerAware implements DriverInterface
 
     /**
      * @param string $queueName
-     * @return \Kaliop\QueueingBundle\Queue\ProducerInterface
-     */
-    public function getProducer($queueName)
-    {
-
-        $producer = $this->container->get("kaliop_queueing.sqs.{$queueName}_producer");
-        //$producer->setQueueName($queueName);
-        return $producer;
-    }
-
-    /**
-     * @param string $queueName
      * @return \Kaliop\QueueingBundle\Queue\QueueManagerInterface
      */
     public function getQueueManager($queueName)
@@ -89,5 +73,64 @@ class Driver extends ContainerAware implements DriverInterface
         $this->debug = $debug;
 
         return $this;
+    }
+
+    /**
+     * @param string $connectionId
+     * @param array $params
+     */
+    public function registerConnection($connectionId, array $params)
+    {
+        $this->connections[$connectionId] = $params;
+    }
+
+    protected function getConnectionConfig($connectionId)
+    {
+        if (!isset($this->connections[$connectionId])) {
+            throw new \RuntimeException("Connection '$connectionId' is not registered with SQS driver");
+        }
+
+        return $this->connections[$connectionId];
+    }
+
+    /**
+     * Dynamically creates a producer, with no need for configuration except for the connection configuration
+     *
+     * @param string $queueName
+     * @param string $queueUrl
+     * @param string $connectionId
+     * @param string $scope
+     * @return mixed
+     */
+    public function createProducer($queueName, $queueUrl, $connectionId, $scope=ContainerInterface::SCOPE_CONTAINER)
+    {
+        $class = $this->container->getParameter('kaliop_queueing.sqs.producer.class');
+        $producer = new $class($this->getConnectionConfig($connectionId));
+        $producer->setQueueUrl($queueUrl);
+        $this->container->set("kaliop_queueing.sqs.{$queueName}_producer", $producer, $scope);
+        return $producer;
+    }
+
+    /**
+     * Dynamically creates a consumer, with no need for configuration except for the connection configuration
+     *
+     * @param string $queueName
+     * @param string $queueUrl
+     * @param string $connectionId Id of a connection as defined in configuration
+     * @param MessageConsumerInterface $callback
+     * @param string $routingKey
+     * @param string $scope
+     * @return Consumer
+     */
+    public function createConsumer($queueName, $queueUrl, $connectionId, $callback=null, $routingKey=null, $scope=ContainerInterface::SCOPE_CONTAINER)
+    {
+        $class = $this->container->getParameter('kaliop_queueing.sqs.consumer.class');
+        $consumer = new $class($this->getConnectionConfig($connectionId));
+        $consumer->setQueueUrl($queueUrl)->setRoutingKey($routingKey);
+        if ($callback != null) {
+            $consumer->setCallBack($callback);
+        }
+        $this->container->set("kaliop_queueing.sqs.{$queueName}_consumer", $consumer, $scope);
+        return $consumer;
     }
 }
