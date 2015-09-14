@@ -19,6 +19,7 @@ class KaliopQueueingPluginsSQSExtension extends Extension
 {
     protected $config = array();
     protected $container;
+    protected $queueManagerService = 'kaliop_queueing.sqs.queue_manager';
 
     /**
      * {@inheritDoc}
@@ -48,6 +49,11 @@ class KaliopQueueingPluginsSQSExtension extends Extension
 
     protected function loadQueues()
     {
+        $qmDefinition = null;
+        if ($this->container->hasDefinition($this->queueManagerService)) {
+            $qmDefinition = $this->container->findDefinition($this->queueManagerService);
+        }
+
         foreach ($this->config['queues'] as $key => $consumer) {
             if (!isset($this->config['connections'][$consumer['connection']])) {
                 throw new \RuntimeException("SQS queue '$key' can not use connection '{$consumer['connection']}' because it is not defined in the connections section");
@@ -75,6 +81,10 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             //if (!$consumer['auto_setup_fabric']) {
             //    $definition->addMethodCall('disableAutoSetupFabric');
             //}
+
+            if ($qmDefinition) {
+                $qmDefinition->addMethodCall('registerQueue', array($key));
+            }
         }
     }
 }

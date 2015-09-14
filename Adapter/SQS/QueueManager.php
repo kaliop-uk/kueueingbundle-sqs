@@ -20,6 +20,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 {
     protected $queueName;
     protected $container;
+    protected $registeredQueues = array();
 
     public function setContainer(ContainerInterface $container = null)
     {
@@ -39,14 +40,17 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
 
     public function listActions()
     {
-        return array('list-available', 'create', 'info', 'purge', 'delete');
+        return array('list-available', 'list-configured', 'create', 'info', 'purge', 'delete');
     }
 
     public function executeAction($action, array $arguments=array())
     {
         switch ($action) {
             case 'list-available':
-                return $this->listQueues();
+                return $this->listAvailableQueues();
+
+            case 'list-configured':
+                return $this->listConfiguredQueues();
 
             case 'create':
                 return $this->createQueue($arguments);
@@ -68,7 +72,7 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
     /**
      * @return array keys are the queue names, values the queue type
      */
-    protected function listQueues()
+    protected function listAvailableQueues()
     {
         $result = $this->getProducerService()->call('listQueues');
         $result = $result->get('QueueUrls');
@@ -76,8 +80,15 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
         if ($result === null) {
             $result = array();
         }
-        $result = array_combine($result, array_fill(0, count($result), Queue::TYPE_ANY));
-        return $result;
+        return array_combine($result, array_fill(0, count($result), Queue::TYPE_ANY));
+    }
+
+    protected function listConfiguredQueues()
+    {
+        if (count($this->registeredQueues) == 0) {
+            return array();
+        }
+        return array_combine($this->registeredQueues, array_fill(0, count($this->registeredQueues), Queue::TYPE_ANY));
     }
 
     /**
@@ -135,5 +146,10 @@ class QueueManager implements ContainerAwareInterface, QueueManagerInterface
     protected function getProducerService()
     {
         return $this->container->get('kaliop_queueing.sqs.'. $this->queueName . '_producer');
+    }
+
+    public function registerQueue($queueName)
+    {
+        $this->registeredQueues[]=$queueName;
     }
 }
