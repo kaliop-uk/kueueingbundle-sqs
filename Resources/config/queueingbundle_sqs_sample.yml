@@ -31,5 +31,9 @@ kaliop_queueing_plugins_sqs:
                 # Ex: kaliop.# matches all commands starting with 'kaliop:'
                 # NB take extra care about securing your environment when you allow execution of commands sent from remote hosts
                 routing_keys: [ '#' ]
+                # The number of messages which cthe consumer will download in each request to the API.
+                # A higher number will probably result in bigger throughput, otoh SQS has size limits on the reposnse
+                # that it will send back, so take care if your messages have a big size
+                max_messages_per_request: 10
             # the name of the callback is fixed
             callback: kaliop_queueing.message_consumer.console_command

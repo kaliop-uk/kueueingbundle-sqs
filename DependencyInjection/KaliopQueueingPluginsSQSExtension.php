@@ -74,6 +74,9 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             if (count($consumer['queue_options']['routing_keys'])) {
                 $cDefinition->addMethodCall('setRoutingKey', array(reset($consumer['queue_options']['routing_keys'])));
             }
+            if ($consumer['queue_options']['max_messages_per_request'] > 1) {
+                $cDefinition->addMethodCall('setRequestBatchSize', array($consumer['queue_options']['max_messages_per_request']));
+            }
 
             $name = sprintf('kaliop_queueing.sqs.%s_consumer', $key);
             $this->container->setDefinition($name, $cDefinition);

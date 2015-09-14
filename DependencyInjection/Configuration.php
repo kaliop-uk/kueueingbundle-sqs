@@ -93,6 +93,7 @@ class Configuration implements ConfigurationInterface
                     ->prototype('scalar')->end()
                     ->defaultValue(array())
                 ->end()
+                ->integerNode('max_messages_per_request')->min(1)->defaultValue(1)->end()
             ->end()
         ;
     }
