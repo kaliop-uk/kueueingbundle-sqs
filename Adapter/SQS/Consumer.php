@@ -5,6 +5,7 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Kaliop\QueueingBundle\Queue\ConsumerInterface;
 use Aws\Sqs\SqsClient;
+use Aws\TraceMiddleware;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -23,6 +24,7 @@ class Consumer implements ConsumerInterface
     // The message attribute used to store content-type. To be kept in sync with the Producer
     protected $contentTypeAttribute = 'contentType';
     protected $routingAttribute = 'routingKey';
+    protected $debug = false;
 
     public function __construct(array $config)
     {
@@ -32,6 +34,25 @@ class Consumer implements ConsumerInterface
     public function setLogger(LoggerInterface $logger = null)
     {
         $this->logger = $logger;
+
+        return $this;
+    }
+
+    /**
+     * Enabled debug. At the moment can not disable it
+     * @param bool|array $debug
+     * @return $this
+     *
+     * @todo test if using $handlerList->removeByInstance we can disable debug as well
+     */
+    public function setDebug($debug) {
+        if ($debug == $this->debug) {
+            return $this;
+        }
+        if ($debug) {
+            $handlerList = $this->client->getHandlerList();
+            $handlerList->interpose(new TraceMiddleware($debug === true ? [] : $debug));
+        }
 
         return $this;
     }
