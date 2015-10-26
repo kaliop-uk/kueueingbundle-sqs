@@ -159,11 +159,18 @@ class Consumer implements ConsumerInterface
                     $data = $message['Body'];
                     unset($message['Body']);
 
-                    $this->callback->receive(new Message(
-                        $data,
-                        $message,
-                        $message['MessageAttributes'][$this->contentTypeAttribute]['StringValue'])
-                    );
+                    $contentType = isset( $message['MessageAttributes'][$this->contentTypeAttribute]['StringValue'] ) ?
+                        $message['MessageAttributes'][$this->contentTypeAttribute]['StringValue'] : '';
+
+                    if ($contentType != '') {
+                        $this->callback->receive(new Message($data, $message, $contentType));
+                    } else {
+                        if ($this->logger) {
+                            $this->logger->warning('The SQS Consumer received a message with no content-type attribute. Assuming default');
+                        }
+
+                        $this->callback->receive(new Message($data, $message));
+                    }
                 }
             }
 
