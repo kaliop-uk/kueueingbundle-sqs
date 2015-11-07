@@ -21,7 +21,6 @@ class Driver extends ContainerAware implements DriverInterface
      */
     public function getProducer($queueName)
     {
-
         return $this->container->get("kaliop_queueing.sqs.{$queueName}_producer")->setDebug($this->debug);
     }
 
@@ -37,7 +36,7 @@ class Driver extends ContainerAware implements DriverInterface
      */
     public function getConsumer($queueName, MessageConsumerInterface $callback = null)
     {
-        return $this->container->get("kaliop_queueing.sqs.{$queueName}_consumer")->setDebug($this->debug);
+        return $this->container->get("kaliop_queueing.sqs.{$queueName}_consumer")->setDebug($this->debug)->setQueueName($queueName);
     }
 
     public function acceptMessage($message)
@@ -126,7 +125,7 @@ class Driver extends ContainerAware implements DriverInterface
     {
         $class = $this->container->getParameter('kaliop_queueing.sqs.consumer.class');
         $consumer = new $class($this->getConnectionConfig($connectionId));
-        $consumer->setQueueUrl($queueUrl)->setRoutingKey($routingKey);
+        $consumer->setQueueUrl($queueUrl)->setRoutingKey($routingKey)->setQueueName($queueName);
         if ($callback != null) {
             $consumer->setCallBack($callback);
         }

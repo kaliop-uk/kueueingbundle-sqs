@@ -16,6 +16,7 @@ class Consumer implements ConsumerInterface
     /** @var  \Aws\Sqs\SqsClient */
     protected $client;
     protected $queueUrl;
+    protected $queueName;
     protected $callback;
     protected $requestBatchSize = 1;
     protected $routingKey;
@@ -105,6 +106,13 @@ class Consumer implements ConsumerInterface
         return $this;
     }
 
+    public function setQueueName($queueName)
+    {
+        $this->queueName = $queueName;
+
+        return $this;
+    }
+
     /**
      * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#receivemessage
      * Will throw an exception if $amount is > 10.000
@@ -163,13 +171,13 @@ class Consumer implements ConsumerInterface
                         $message['MessageAttributes'][$this->contentTypeAttribute]['StringValue'] : '';
 
                     if ($contentType != '') {
-                        $this->callback->receive(new Message($data, $message, $contentType));
+                        $this->callback->receive(new Message($data, $message, $contentType, $this->queueName));
                     } else {
                         if ($this->logger) {
                             $this->logger->warning('The SQS Consumer received a message with no content-type attribute. Assuming default');
                         }
 
-                        $this->callback->receive(new Message($data, $message));
+                        $this->callback->receive(new Message($data, $message, null, $this->queueName));
                     }
                 }
             }

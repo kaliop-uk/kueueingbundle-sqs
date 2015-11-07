@@ -8,13 +8,17 @@ class Message implements MessageInterface
 {
     protected $body;
     protected $properties = array();
-    protected $contentType;
+    protected $contentType = 'application/json';
+    protected $queueName;
 
-    public function __construct($body, array $properties = array(), $contentType='application/json')
+    public function __construct($body, array $properties = array(), $contentType = null, $queueName = '')
     {
         $this->body = $body;
         $this->properties = $properties;
-        $this->contentType = $contentType;
+        if ($contentType != null) {
+            $this->contentType = $contentType;
+        }
+        $this->queueName = $queueName;
     }
 
     public function getBody()
@@ -23,12 +27,19 @@ class Message implements MessageInterface
     }
 
     /**
-     * This is hardcoded because
      * @return string
      */
     public function getContentType()
     {
         return $this->contentType;
+    }
+
+    /**
+     * @return string
+     */
+    public function getQueueName()
+    {
+        return $this->queueName;
     }
 
     /**
