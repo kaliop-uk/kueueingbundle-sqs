@@ -4,6 +4,8 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
 use Kaliop\QueueingBundle\Queue\ConsumerInterface;
+use Kaliop\QueueingBundle\Queue\SignalHandlingConsumerInterface;
+use Kaliop\QueueingBundle\Adapter\ForcedStopException;
 use Aws\Sqs\SqsClient;
 use Aws\TraceMiddleware;
 use Psr\Log\LoggerInterface;
@@ -11,7 +13,7 @@ use Psr\Log\LoggerInterface;
 /**
  * @todo support long polling - even though it will complicate consume() even more than it already is
  */
-class Consumer implements ConsumerInterface
+class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
 {
     /** @var  \Aws\Sqs\SqsClient */
     protected $client;
@@ -26,6 +28,8 @@ class Consumer implements ConsumerInterface
     protected $contentTypeAttribute = 'contentType';
     protected $routingAttribute = 'routingKey';
     protected $debug = false;
+    protected $forceStop = false;
+    protected $dispatchSignals = false;
 
     public function __construct(array $config)
     {
@@ -182,6 +186,8 @@ class Consumer implements ConsumerInterface
                 }
             }
 
+            $this->maybeStopConsumer();
+
             if ($amount > 0) {
                 return;
             }
@@ -248,5 +254,33 @@ class Consumer implements ConsumerInterface
     public function getQueueUrl()
     {
         return $this->queueUrl;
+    }
+
+    public function setHandleSignals($doHandle)
+    {
+        $this->dispatchSignals = $doHandle;
+    }
+
+
+    public function forceStop()
+    {
+        $this->forceStop = true;
+    }
+
+    /**
+     * Dispatches signals and throws an exception if user wants to stop. To be called at execution points when there is no data loss
+     *
+     * @param string $message
+     * @throws ForcedStopException
+     */
+    protected function maybeStopConsumer($message = '')
+    {
+        if ($this->dispatchSignals) {
+            pcntl_signal_dispatch();
+        }
+
+        if ($this->forceStop) {
+            throw new ForcedStopException($message);
+        }
     }
 }
