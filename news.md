@@ -1,3 +1,8 @@
+# Ver 0.4
+
+* NEW: support proper consumer suthdown when receiving unix signals
+
+
 # Ver 0.3
 
 * NEW: introduce compatibility with queueingbundle 0.4
