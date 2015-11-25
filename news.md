@@ -1,3 +1,8 @@
+# Ver 0.5
+
+* NEW: add support for memory limit in the consumer
+
+
 # Ver 0.4
 
 * NEW: support proper consumer suthdown when receiving unix signals

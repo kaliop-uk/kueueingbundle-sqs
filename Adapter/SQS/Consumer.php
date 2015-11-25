@@ -29,7 +29,9 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     protected $routingAttribute = 'routingKey';
     protected $debug = false;
     protected $forceStop = false;
+    protected $forceStopReason;
     protected $dispatchSignals = false;
+    protected $memoryLimit = null;
 
     public function __construct(array $config)
     {
@@ -63,12 +65,13 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     }
 
     /**
-     * Does nothing
-     * @param int $limit
+     * @param int $limit MB
      * @return Consumer
      */
     public function setMemoryLimit($limit)
     {
+        $this->memoryLimit = $limit;
+
         return $this;
     }
 
@@ -262,25 +265,29 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     }
 
 
-    public function forceStop()
+    public function forceStop($reason = '')
     {
         $this->forceStop = true;
+        $this->forceStopReason = $reason;
     }
 
     /**
      * Dispatches signals and throws an exception if user wants to stop. To be called at execution points when there is no data loss
      *
-     * @param string $message
      * @throws ForcedStopException
      */
-    protected function maybeStopConsumer($message = '')
+    protected function maybeStopConsumer()
     {
         if ($this->dispatchSignals) {
             pcntl_signal_dispatch();
         }
 
+        if ($this->memoryLimit > 0 && !$this->forceStop && memory_get_usage(true) >= ($this->memoryLimit * 1024 * 1024) ) {
+            $this->forceStop("Memory limit of {$this->memoryLimit} MB reached while consuming messages");
+        }
+
         if ($this->forceStop) {
-            throw new ForcedStopException($message);
+            throw new ForcedStopException($this->forceStopReason);
         }
     }
 }
