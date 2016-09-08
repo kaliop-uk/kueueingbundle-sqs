@@ -6,7 +6,7 @@
         "psr-4": { "Kaliop\\Queueing\\Plugins\\SQSBundle\\": "" }
     },
     "require": {
-        "kaliop/queueingbundle": "~0.2",
+        "kaliop/queueingbundle": "~0.6",
         "aws/aws-sdk-php": "~3.0"
     },
     "require-dev": {
