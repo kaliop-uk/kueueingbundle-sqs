@@ -88,3 +88,4 @@ If you want to run the testsuite outside of Travis, you will need to
 [![Total Downloads](https://poser.pugx.org/kaliop/queueingbundle-sqs/downloads)](https://packagist.org/packages/kaliop/queueingbundle-sqs)
 
 [![Build Status](https://travis-ci.org/kaliop-uk/queueingbundle-sqs.svg?branch=master)](https://travis-ci.org/kaliop-uk/queueingbundle-sqs)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/109e3d15-bfa6-4923-8077-2a3efa5be8b9/mini.png)](https://insight.sensiolabs.com/projects/109e3d15-bfa6-4923-8077-2a3efa5be8b9)
