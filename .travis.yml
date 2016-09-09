@@ -15,15 +15,23 @@ env:
     # encrypte env vars to use for Symfony config
     - secure: "L1vRA5jv3RUFNV2aZpYpqX962LiEXy+GBH80CNuzsz1PECyM3WJKVLzrYzt2SfToi8jOKKt1HtDeyPa0Hezt2qiRe5NLr4oBNCkKumyNCUa67PD086p4f+rctvY4FO49NDKlmtPJjNtTYpRpy+7u/tsGntEWDRopOIYsm4jJanEk8H1UnxExonMfn1ULmHamHiDion2jx//ui/K7B05ekK0FYo3xS7UhTbQejbdiYSFu5VnyOPix2+zoZEP8kZ8fQuUTTFnQaL+vyt6J2v6qRjX64sEZfByfdqYIBC/WrvVcBxhdX3ptB5s5klovGROCoUAafDtfiabG2kjGFAZcbEzTV6MEkTVov3P9et30jvc+x6sKtwFisakQ8417H0jMoQxBTN+Jn7nWb+uJ4LGXKjJPSU7siC6PK4JvElu63BaWP4VVDsOhYewORzqQXN0EbGBAx0t5ceUT9Y+3m/d1P871e/uy6SI3Li10205eoSr9v3L4bsDbKzESVU1LN80wslIZEw/q2v3m9kwkak5XZJYwkPGpR/L4bVOTi8wV0kW0jjtP3BoNc3/zhtl/RMtQMKrKW6XN307ETFBoOvbR4cAi21Lbfsac+Xyru5Zid2peea7LlIMD/wnUxc+Jr6rXctIA3h/0bXv+UBxkm78ef/sx3SlxAXJitKo2x5IzhPU="
     - secure: "g3EJ7MEPkY6T4bcxNmVZ1ECkwL0smIbg1HeXHyKFsdUekUBC0WBxCqSVxglL9Wo54oWESUhHGpDJnR+p2r75ODoiJaa+ROrtBvEtqzdsG3LIauHl4QdbhZ96fSqrY/6opBE1hcYTz3f6aJbM3NuaSKuHz9+3gAQzS4JmF/tiotPhG0/q3OJdUexYWO5Xu0mlmwCbsEEBOWXs+nSCaymUc0L0vI0ipQvUQsUHmaPdvoUVF+Jv//Aw6HgFsRP2EBLKcrHj+hgqQa5R66G3LkLSz03Au9UxckY1oKl69ZLiM5Q5tqpYHce2TFATvqn0/8BzbpqrCPlKdWYZ/Drat+ziRNpDu4kDx9o35iUAaU4CwPOC5UVVmgExpsoIBTW8jRTSY4CyGeET41IpjC0hBkEAbYGCaZ7J0Lr7KAlrTIYMycCnapFbz17wkOLythOCdCxnDa6uBYE0LN2LmMDLU5aTWd17dtKkAr/+MBzUq/XkUrbDAomc6skUptw0O3p0CptJKV1EaKLz5Oew61IXQlGqozi78RfbzEZtggJWSXLZNT0j/hT9pD7X8ulop/6bCRC4Z5/GpG4LmNtllyrHH/nUW1E8eg6eg8csvKvZRh/AMPrmOArFyyQgqHg0vpNPKSi1nx/WWpFDfCC8wjRErpnszg891C7MX3Zmagipdsmj5eE="
-  matrix:
-    # Test only on versions of Sf that are still supported. See: http://symfony.com/doc/current/contributing/community/releases.html#version-history
-    - SYMFONY_VERSION=2.3.*
-    - SYMFONY_VERSION=2.7.*
-    - SYMFONY_VERSION=2.8.*
-    - SYMFONY_VERSION=3.0.*
-    - SYMFONY_VERSION=3.1.*
 
 matrix:
+  # Test only on versions of Sf that are still supported. See: http://symfony.com/doc/current/contributing/community/releases.html#version-history
+  include:
+  # We are no more compatible with SF 2.3
+  #- php: 5.3
+  #  env: SYMFONY_VERSION=2.3.*
+  - php: 5.4
+    env: SYMFONY_VERSION=2.6.*
+  - php: 5.5
+    env: SYMFONY_VERSION=2.7.*
+  - php: 5.6
+    env: SYMFONY_VERSION=2.8.*
+  - php: 7.0
+    env: SYMFONY_VERSION=3.0.*
+  - php: hhvm
+    env: SYMFONY_VERSION=3.1.*
   allow_failures:
     # at the moment it gives an error with Sf 2.6 and 2.7...
     - php: 5.6
@@ -33,7 +41,7 @@ before_install:
   #- sudo apt-get update -qq
 
 install:
-  # Disable xdebug for speed (executing composer), but allow us to e-enable it later
+  # Disable xdebug for speed (executing composer), but allow us to re-enable it later
   # NB: 'php -i' does not work on hhvm
   - if [ "$TRAVIS_PHP_VERSION" = "hhvm" ]; then export XDEBUG_INI=''; fi
   - if [ "$TRAVIS_PHP_VERSION" != "hhvm" ]; then export XDEBUG_INI=`php -i | grep xdebug.ini | grep home/travis | grep -v '=>' | head -1`; fi

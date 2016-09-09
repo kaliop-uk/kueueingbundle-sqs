@@ -4,14 +4,17 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Adapter\DriverInterface;
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
-use Symfony\Component\DependencyInjection\ContainerAware;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @todo inject Debug flag in both consumers and producers
  */
-class Driver extends ContainerAware implements DriverInterface
+class Driver implements DriverInterface, ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     protected $debug;
     protected $connections;
 
