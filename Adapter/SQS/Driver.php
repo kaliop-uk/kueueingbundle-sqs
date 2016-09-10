@@ -101,15 +101,14 @@ class Driver implements DriverInterface, ContainerAwareInterface
      * @param string $queueName
      * @param string $queueUrl
      * @param string $connectionId
-     * @param string $scope
      * @return mixed
      */
-    public function createProducer($queueName, $queueUrl, $connectionId, $scope=ContainerInterface::SCOPE_CONTAINER)
+    public function createProducer($queueName, $queueUrl, $connectionId)
     {
         $class = $this->container->getParameter('kaliop_queueing.sqs.producer.class');
         $producer = new $class($this->getConnectionConfig($connectionId));
         $producer->setQueueUrl($queueUrl);
-        $this->container->set("kaliop_queueing.sqs.{$queueName}_producer", $producer, $scope);
+        $this->container->set("kaliop_queueing.sqs.{$queueName}_producer", $producer);
         return $producer;
     }
 
