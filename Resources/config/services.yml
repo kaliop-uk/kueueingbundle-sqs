@@ -6,24 +6,24 @@ parameters:
 
 services:
     kaliop_queueing.driver.sqs:
-        class: %kaliop_queueing.driver.sqs.class%
+        class: '%kaliop_queueing.driver.sqs.class%'
         calls:
-            - [ setContainer, [ @service_container ] ]
+            - [ setContainer, [ '@service_container' ] ]
         tags:
             - { name: kaliop_queueing.driver, alias: sqs }
 
     kaliop_queueing.sqs.queue_manager:
-        class: %kaliop_queueing.sqs.queue_manager.class%
+        class: '%kaliop_queueing.sqs.queue_manager.class%'
         #parent: kaliop_queueing.message_producer
         calls:
-            - [ setContainer, [ @service_container ] ]
+            - [ setContainer, [ '@service_container' ] ]
 
     #kaliop_queueing.sqs.producer:
-    #    class: %kaliop_queueing.sqs.producer.class%
-    #    arguments: [ %kaliop_queueing_sqs.default.client_config% ]
+    #    class: '%kaliop_queueing.sqs.producer.class%'
+    #    arguments: [ '%kaliop_queueing_sqs.default.client_config%' ]
 
     #kaliop_queueing.sqs.consumer:
-    #    class: %kaliop_queueing.sqs.consumer.class%
-    #    arguments: [ %kaliop_queueing_sqs.default.client_config% ]
+    #    class: '%kaliop_queueing.sqs.consumer.class%'
+    #    arguments: [ '%kaliop_queueing_sqs.default.client_config%' ]
     #    calls:
-    #        - [ setRequestBatchSize, [ %kaliop_queueing_sqs.default.request_batch_size% ] ]
+    #        - [ setRequestBatchSize, [ '%kaliop_queueing_sqs.default.request_batch_size%' ] ]
