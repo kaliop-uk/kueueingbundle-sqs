@@ -6,11 +6,11 @@
         "psr-4": { "Kaliop\\Queueing\\Plugins\\SQSBundle\\": "" }
     },
     "require": {
+        "kaliop/queueingbundle": "^0.6",
+        "aws/aws-sdk-php": "^3.0",
         "symfony/config": "^2.4 || ^3.0",
         "symfony/dependency-injection": "^2.4 || ^3.0",
-        "symfony/http-kernel": "^2.4 || ^3.0",
-        "kaliop/queueingbundle": "^0.6",
-        "aws/aws-sdk-php": "^3.0"
+        "symfony/http-kernel": "^2.4 || ^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.0",
