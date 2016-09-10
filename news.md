@@ -1,3 +1,8 @@
+# Ver 0.6 (to be released)
+
+* NEW: made the package compatible with Symfony 3. As a side effect, we do not support Symfony 2.3 any more.
+
+
 # Ver 0.5
 
 * NEW: add support for memory limit in the consumer
