@@ -128,15 +128,17 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
 
     /**
      * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#receivemessage
-     * Will throw an exception if $amount is > 10.000
+     * Will throw an exception if $amount is > 10
      *
      * @param int $amount
      * @param int $timeout seconds
-     * @return nothing
+     * @return void
      */
     public function consume($amount, $timeout=0)
     {
         $limit = ($amount > 0) ? $amount : $this->requestBatchSize;
+        $received = 0;
+
         if ($timeout > 0) {
             $startTime = time();
             $remaining = $timeout;
@@ -144,7 +146,6 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
 
         $receiveParams = array(
             'QueueUrl' => $this->queueUrl,
-            'MaxNumberOfMessages' => $limit,
             'AttributeNames' => array('All'),
             'MessageAttributeNames' => array('All')
         );
@@ -156,6 +157,11 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
                 // according to the spec, this is maximum wait time. If messages are available sooner, they get delivered immediately
                 $receiveParams['WaitTimeSeconds'] = $remaining;
             }
+
+            if ($amount > 0) {
+                $limit = $amount - $received;
+            }
+            $receiveParams['MaxNumberOfMessages'] = $limit;
 
             $result = $this->client->receiveMessage($receiveParams);
             $messages = $result->get('Messages');
@@ -170,6 +176,8 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
                     if (! $this->matchRoutingKey($message)) {
                         continue;
                     }
+
+                    $received++;
 
                     // removing the message from the queue is manual with SQS
                     $this->client->deleteMessage(array(
@@ -197,7 +205,7 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
 
             $this->maybeStopConsumer();
 
-            if ($amount > 0) {
+            if ($amount > 0 && $received >= $amount) {
                 return;
             }
 
