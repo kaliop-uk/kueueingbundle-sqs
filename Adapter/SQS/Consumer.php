@@ -32,6 +32,7 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     protected $forceStopReason;
     protected $dispatchSignals = false;
     protected $memoryLimit = null;
+    protected $gcProbability = 1;
 
     public function __construct(array $config)
     {
@@ -118,6 +119,11 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
         $this->queueName = $queueName;
 
         return $this;
+    }
+
+    public function setGCProbability($probability)
+    {
+        $this->gcProbability = $probability;
     }
 
     /**
@@ -280,6 +286,10 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     {
         if ($this->dispatchSignals) {
             pcntl_signal_dispatch();
+        }
+
+        if ($this->gcProbability > 0 && rand(1, 100) <= $this->gcProbability) {
+            gc_collect_cycles();
         }
 
         if ($this->memoryLimit > 0 && !$this->forceStop && memory_get_usage(true) >= ($this->memoryLimit * 1024 * 1024) ) {
