@@ -1,3 +1,4 @@
+
 # Ver 0.7
 
 * FIXED: Issue #3 Consumer process does not allow to use a long timeout interval
