@@ -11,7 +11,7 @@ use Aws\TraceMiddleware;
 use Psr\Log\LoggerInterface;
 
 /**
- * @todo support long polling - even though it will complicate consume() even more than it already is
+ * @todo support using short polling even when given a total timeout - even though it will complicate consume() even more than it already is
  */
 class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
 {
@@ -20,7 +20,7 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     protected $queueUrl;
     protected $queueName;
     protected $callback;
-    protected $requestBatchSize = 1;
+
     protected $routingKey;
     protected $routingKeyRegexp;
     protected $logger;
@@ -32,7 +32,17 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     protected $forceStopReason;
     protected $dispatchSignals = false;
     protected $memoryLimit = null;
+    /** @var int $requestBatchSize how many messages to receive in each poll by default */
+    protected $requestBatchSize = 1;
+    /** @var int $requestTimeout how long to wait for messages in each request. Switches between long and short polling */
+    protected $requestTimeout = 0;
+    /** @var int the minimum interval between two queue polls - in milliseconds */
+    protected $pollingIntervalMs = 200000;
+    /** @var int $gcProbability the probability of calling gc_collect_cycles at the end of every poll */
     protected $gcProbability = 1;
+
+    const MAX_MESSAGES_PER_REQUEST = 10;
+    const MAX_REQUEST_TIMEOUT = 20;
 
     public function __construct(array $config)
     {
@@ -101,6 +111,13 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
         return $this;
     }
 
+    public function setQueueName($queueName)
+    {
+        $this->queueName = $queueName;
+
+        return $this;
+    }
+
     /**
      * The number of messages to download in every request to the SQS API.
      * Bigger numbers are better for performances, but there is a limit on the size of the response which SQS will send.
@@ -114,9 +131,16 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
         return $this;
     }
 
-    public function setQueueName($queueName)
+    public function setRequestTimeout($timeout)
     {
-        $this->queueName = $queueName;
+        $this->requestTimeout = $timeout;
+
+        return $this;
+    }
+
+    public function setPollingInterval($intervalMs)
+    {
+        $this->pollingIntervalMs = $intervalMs;
 
         return $this;
     }
@@ -124,25 +148,25 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     public function setGCProbability($probability)
     {
         $this->gcProbability = $probability;
+
+        return $this;
     }
 
     /**
      * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#receivemessage
-     * Will throw an exception if $amount is > 10
      *
-     * @param int $amount
-     * @param int $timeout seconds
+     * @param int $amount 0 for unlimited
+     * @param int $timeout seconds 0 for unlimited. NB: any value > 0 activates 'long polling' mode
      * @return void
      */
-    public function consume($amount, $timeout=0)
+    public function consume($amount, $timeout = 0)
     {
-        $limit = ($amount > 0) ? $amount : $this->requestBatchSize;
-        $received = 0;
-
         if ($timeout > 0) {
-            $startTime = time();
-            $remaining = $timeout;
+            $endTime = time() + $timeout;
+            $remainingTime = $timeout;
         }
+
+        $received = 0;
 
         $receiveParams = array(
             'QueueUrl' => $this->queueUrl,
@@ -154,13 +178,33 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
             $reqTime = microtime(true);
 
             if ($timeout > 0) {
+                $wait = $remainingTime;
+                if ($wait > static::MAX_REQUEST_TIMEOUT) {
+                    $wait = static::MAX_REQUEST_TIMEOUT;
+                }
+            } else {
+                $wait = $this->requestTimeout;
+            }
+
+            if ($wait > 0) {
                 // according to the spec, this is maximum wait time. If messages are available sooner, they get delivered immediately
-                $receiveParams['WaitTimeSeconds'] = $remaining;
+                $receiveParams['WaitTimeSeconds'] = $wait;
+            } else {
+                if (isset($receiveParams['WaitTimeSeconds'])) {
+                    unset($receiveParams['WaitTimeSeconds']);
+                }
             }
 
             if ($amount > 0) {
                 $limit = $amount - $received;
+
+                if ($limit >= static::MAX_MESSAGES_PER_REQUEST) {
+                    $limit = static::MAX_MESSAGES_PER_REQUEST;
+                }
+            } else {
+                $limit = $this->requestBatchSize;
             }
+
             $receiveParams['MaxNumberOfMessages'] = $limit;
 
             $result = $this->client->receiveMessage($receiveParams);
@@ -209,15 +253,14 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
                 return;
             }
 
-            if ($timeout > 0 && ($remaining = ($startTime + $timeout - time())) <= 0) {
+            if ($timeout > 0 && ($remainingTime = ($endTime - time())) <= 0) {
                 return;
             }
 
-            /// @todo use a parameter to decide the polling interval
-            // observe MAX 5 requests per sec per queue: sleep for 0.2 secs in between requests
+            // observe MAX 5 requests per sec per queue by default: sleep for 0.2 secs in between requests
             $passedMs = (microtime(true) - $reqTime) * 1000000;
-            if ($passedMs < 200000) {
-                usleep(200000 - $passedMs);
+            if ($passedMs < $this->pollingIntervalMs) {
+                usleep($this->pollingIntervalMs - $passedMs);
             }
         }
     }
@@ -297,6 +340,7 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
         }
 
         if ($this->gcProbability > 0 && rand(1, 100) <= $this->gcProbability) {
+echo "GC!\n";
             gc_collect_cycles();
         }
 
