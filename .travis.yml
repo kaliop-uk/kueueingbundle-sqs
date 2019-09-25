@@ -12,23 +12,16 @@ env:
 matrix:
   # Test only on versions of Sf that are still supported. See: http://symfony.com/doc/current/contributing/community/releases.html#version-history
   include:
-    # We are no more compatible with SF 2.3
-    #- php: 5.5
-    #  env: SYMFONY_VERSION=2.3.*
-    - php: 5.5
-      env: SYMFONY_VERSION=2.6.* CODE_COVERAGE=0
-    - php: 5.5
-      env: SYMFONY_VERSION=2.7.* CODE_COVERAGE=0
     - php: 5.6
-      env: SYMFONY_VERSION=2.8.* CODE_COVERAGE=1
+      env: SYMFONY_VERSION=2.7.* CODE_COVERAGE=0
     - php: 7.0
-      env: SYMFONY_VERSION=3.0.* CODE_COVERAGE=0
-    - php: hhvm
-      env: SYMFONY_VERSION=3.1.* CODE_COVERAGE=0
-
-  allow_failures:
-    # at the moment it gives an error with Sf 2.6 and 2.7...
-    - php: 5.5
+      env: SYMFONY_VERSION=2.8.* CODE_COVERAGE=0
+    - php: 7.1
+      env: SYMFONY_VERSION=3.4.* CODE_COVERAGE=0
+    - php: 7.2
+      env: SYMFONY_VERSION=4.2.* CODE_COVERAGE=0
+    - php: 7.3
+      env: SYMFONY_VERSION=4.3.* CODE_COVERAGE=0
 
 before_install:
   # This is mandatory or 'apt-get install' calls following will fail
@@ -53,7 +46,7 @@ before_script:
   - cp phpunit.xml.dist phpunit.xml
 
 script:
-  - if [ "$CODE_COVERAGE" = "1" ]; then phpunit --colors --coverage-clover=coverage.clover Tests/phpunit; else phpunit --colors Tests/phpunit; fi
+  - if [ "$CODE_COVERAGE" = "1" ]; then ./vendor/phpunit/phpunit/phpunit --colors --coverage-clover=coverage.clover Tests/phpunit; else phpunit --colors Tests/phpunit; fi
 
 after_failure:
   # Display as much info as we can to help developers
@@ -61,10 +54,10 @@ after_failure:
 
 after_script:
   # Upload code-coverage to Scrutinizer
-  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover  ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
-  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover  ]; then php ocular.phar code-coverage:upload --format=php-clover coverage.clover; fi
+  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
+  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then php ocular.phar code-coverage:upload --format=php-clover coverage.clover; fi
   # Upload code-coverage to CodeClimate
-  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover  ]; then CODECLIMATE_REPO_TOKEN=TOBEGOTTEN ./vendor/bin/test-reporter --coverage-report=coverage.clover; fi
+  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then CODECLIMATE_REPO_TOKEN=TOBEGOTTEN ./vendor/bin/test-reporter --coverage-report=coverage.clover; fi
 
 cache:
   directories:
