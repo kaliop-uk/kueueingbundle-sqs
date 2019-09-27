@@ -340,7 +340,6 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
         }
 
         if ($this->gcProbability > 0 && rand(1, 100) <= $this->gcProbability) {
-echo "GC!\n";
             gc_collect_cycles();
         }
 

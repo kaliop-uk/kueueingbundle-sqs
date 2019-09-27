@@ -2,7 +2,7 @@
 # Ver 0.7
 
 * FIXED: Issue #3 Consumer process does not allow to use a long timeout interval
-    It is now possible to use both a long timeout and/or a big number ofmessages to be consumed in calls to `consume`.
+    It is now possible to use both a long timeout and/or a big number of messages to be consumed in calls to `consume`.
     The client will take care not to exceed in any case the AWS limits (20 secs timeout, 10 messages per call), and
     keep polling as long as one of the limits is reached
 
