@@ -38,6 +38,7 @@ install:
   - if [ "$CODE_COVERAGE" = "1" -a "$XDEBUG_INI" != "" ]; then mv "$XDEBUG_INI.bak" "$XDEBUG_INI"; fi
 
 before_script:
+  - if [ "$TRAVIS_PHP_VERSION" = "5.6" ]; then phpenv config-add Tests/travis/zzz_php.ini; fi
   - cp phpunit.xml.dist phpunit.xml
 
 script:
