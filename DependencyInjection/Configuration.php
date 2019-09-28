@@ -94,6 +94,9 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(array())
                 ->end()
                 ->integerNode('max_messages_per_request')->min(1)->defaultValue(1)->end()
+                ->integerNode('request_timeout')->min(0)->defaultValue(0)->end()
+                ->integerNode('polling_interval')->min(0)->defaultValue(200000)->end()
+                ->integerNode('gc_probability')->min(0)->max(100)->defaultValue(1)->end()
             ->end()
         ;
     }

@@ -26,14 +26,26 @@ kaliop_queueing_plugins_sqs:
             queue_options:
                 # name of the queue on AWS SQS
                 name: https://sqs.us-east-1.amazonaws.com/139046234059/ConsoleCommandQueue
-                # Routing keys available on this queue are the command to be executed, with doublecolon replaced by dots
-                # A hash sign is a widlcard, while a star matches one word only
+                # Routing keys available on this queue are the command to be executed, with double-colon replaced by dots
+                # A hash sign is a wildcard, while a star matches one word only
                 # Ex: kaliop.# matches all commands starting with 'kaliop:'
                 # NB take extra care about securing your environment when you allow execution of commands sent from remote hosts
                 routing_keys: [ '#' ]
-                # The number of messages which cthe consumer will download in each request to the API.
-                # A higher number will probably result in bigger throughput, otoh SQS has size limits on the reposnse
-                # that it will send back, so take care if your messages have a big size
+                # The maximum number of messages which the consumer will download in each request to the API.
+                # A higher number will probably result in bigger throughput, otoh SQS has size limits on the response
+                # that it will send back, so take care if your messages have a big size.
+                # NB: AT the moment SQS does not allow setting this to values bigger than 10
                 max_messages_per_request: 10
+                # The number of seconds that each request is allowed  to wait for messages.
+                # Using a value > 0 switches on 'long polling', whereas by default the client uses 'short polling' requests.
+                # NB: AT the moment SQS does not allow setting this to values bigger than 20
+                request_timeout: 0
+                # The minimum amount of time to wait in between two consecutive API calls, in microseconds
+                polling_interval: 200000
+                # The probability (as percentage) that, after each request to the API, the client will trigger a php
+                # garbage collection call. Lowering it to 0 is not a good idea for long lived consumers, as the
+                # aws-sdk that we rely on is known to produce objects graphs with cycles, which means that it does
+                # leak memory when running for a long time without invoking gc
+                gc_probability: 1
             # the name of the callback is fixed
             callback: kaliop_queueing.message_consumer.console_command

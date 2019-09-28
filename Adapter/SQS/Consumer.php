@@ -32,12 +32,13 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
     protected $forceStopReason;
     protected $dispatchSignals = false;
     protected $memoryLimit = null;
+    // NB: when changing the defaults below, alter as well KaliopQueueingPluginsSQSExtension::load
     /** @var int $requestBatchSize how many messages to receive in each poll by default */
     protected $requestBatchSize = 1;
     /** @var int $requestTimeout how long to wait for messages in each request. Switches between long and short polling */
     protected $requestTimeout = 0;
-    /** @var int the minimum interval between two queue polls - in milliseconds */
-    protected $pollingIntervalMs = 200000;
+    /** @var int the minimum interval between two queue polls - in microseconds */
+    protected $pollingIntervalUs = 200000;
     /** @var int $gcProbability the probability of calling gc_collect_cycles at the end of every poll */
     protected $gcProbability = 1;
 
@@ -138,9 +139,9 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
         return $this;
     }
 
-    public function setPollingInterval($intervalMs)
+    public function setPollingInterval($intervalUs)
     {
-        $this->pollingIntervalMs = $intervalMs;
+        $this->pollingIntervalUs = $intervalUs;
 
         return $this;
     }
@@ -179,12 +180,18 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
 
             if ($timeout > 0) {
                 $wait = $remainingTime;
-                if ($wait > static::MAX_REQUEST_TIMEOUT) {
-                    $wait = static::MAX_REQUEST_TIMEOUT;
+
+                if ($wait > $this->requestTimeout) {
+                    $wait = $this->requestTimeout;
                 }
             } else {
                 $wait = $this->requestTimeout;
             }
+
+            // we leave it up to the API to fail
+            //if ($wait > static::MAX_REQUEST_TIMEOUT) {
+            //    $wait = static::MAX_REQUEST_TIMEOUT;
+            //}
 
             if ($wait > 0) {
                 // according to the spec, this is maximum wait time. If messages are available sooner, they get delivered immediately
@@ -198,12 +205,17 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
             if ($amount > 0) {
                 $limit = $amount - $received;
 
-                if ($limit >= static::MAX_MESSAGES_PER_REQUEST) {
-                    $limit = static::MAX_MESSAGES_PER_REQUEST;
+                if ($limit > $this->requestBatchSize) {
+                    $limit = $this->requestBatchSize;
                 }
             } else {
                 $limit = $this->requestBatchSize;
             }
+
+            // we leave it up to the API to fial
+            //if ($limit > static::MAX_MESSAGES_PER_REQUEST) {
+            //    $limit = static::MAX_MESSAGES_PER_REQUEST;
+            //}
 
             $receiveParams['MaxNumberOfMessages'] = $limit;
 
@@ -258,9 +270,9 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
             }
 
             // observe MAX 5 requests per sec per queue by default: sleep for 0.2 secs in between requests
-            $passedMs = (microtime(true) - $reqTime) * 1000000;
-            if ($passedMs < $this->pollingIntervalMs) {
-                usleep($this->pollingIntervalMs - $passedMs);
+            $passedUs = (microtime(true) - $reqTime) * 1000000;
+            if ($passedUs < $this->pollingIntervalUs) {
+                usleep($this->pollingIntervalUs - $passedUs);
             }
         }
     }

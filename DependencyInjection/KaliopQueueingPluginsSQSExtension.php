@@ -77,7 +77,15 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             if ($consumer['queue_options']['max_messages_per_request'] > 1) {
                 $cDefinition->addMethodCall('setRequestBatchSize', array($consumer['queue_options']['max_messages_per_request']));
             }
-
+            if ($consumer['queue_options']['request_timeout'] > 0) {
+                $cDefinition->addMethodCall('setRequestTimeout', array($consumer['queue_options']['request_timeout']));
+            }
+            if ($consumer['queue_options']['gc_probability'] != 1) {
+                $cDefinition->addMethodCall('setGCProbability', array($consumer['queue_options']['gc_probability']));
+            }
+            if ($consumer['queue_options']['polling_interval'] != 200000) {
+                $cDefinition->addMethodCall('setPollingInterval', array($consumer['queue_options']['polling_interval']));
+            }
             $name = sprintf('kaliop_queueing.sqs.%s_consumer', $key);
             $this->container->setDefinition($name, $cDefinition);
 
