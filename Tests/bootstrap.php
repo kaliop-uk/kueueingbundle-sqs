@@ -7,5 +7,5 @@ if (!file_exists($file = __DIR__.'/../vendor/autoload.php')) {
 $loader = require $file;
 
 $classLoader = new \Composer\Autoload\ClassLoader();
-$classLoader->addClassMap(array("AppKernel" => __DIR__.'/app'));
+$classLoader->addClassMap(array("AppKernel" => __DIR__.'/app/AppKernel.php'));
 $classLoader->register();
