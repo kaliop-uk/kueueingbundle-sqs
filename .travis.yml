@@ -25,6 +25,8 @@ before_install:
   #- sudo apt-get update -qq
 
 install:
+  - if [ "$TRAVIS_PHP_VERSION" = "5.6" ]; then phpenv config-add Tests/travis/zzz_php.ini; fi
+
   # Disable xdebug for speed (executing composer), but allow us to re-enable it later
   - export XDEBUG_INI=`php -i | grep xdebug.ini | grep home/travis | grep -v '=>' | head -1`
   - export XDEBUG_INI=${XDEBUG_INI/,/}
@@ -38,7 +40,6 @@ install:
   - if [ "$CODE_COVERAGE" = "1" -a "$XDEBUG_INI" != "" ]; then mv "$XDEBUG_INI.bak" "$XDEBUG_INI"; fi
 
 before_script:
-  - if [ "$TRAVIS_PHP_VERSION" = "5.6" ]; then phpenv config-add Tests/travis/zzz_php.ini; fi
   - cp phpunit.xml.dist phpunit.xml
 
 script:
