@@ -30,6 +30,6 @@ services:
     test_alias.kaliop_queueing.driver.sqs:
         alias: 'kaliop_queueing.driver.sqs'
         public: true
-    test_alias.kaliop_queueing.driver.queue_manager:
-        alias: 'kaliop_queueing.driver.queue_manager'
+    test_alias.kaliop_queueing.sqs.queue_manager:
+        alias: 'kaliop_queueing.sqs.queue_manager'
         public: true
