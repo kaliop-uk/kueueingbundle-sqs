@@ -9,8 +9,10 @@ services:
         class: '%kaliop_queueing.driver.sqs.class%'
         calls:
             - [ setContainer, [ '@service_container' ] ]
+            - [ setQueueManager, [ '@kaliop_queueing.sqs.queue_manager' ] ]
         tags:
             - { name: kaliop_queueing.driver, alias: sqs }
+        public: true
 
     kaliop_queueing.sqs.queue_manager:
         class: '%kaliop_queueing.sqs.queue_manager.class%'

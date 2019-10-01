@@ -4,9 +4,9 @@ namespace Kaliop\Queueing\Plugins\SQSBundle\Adapter\SQS;
 
 use Kaliop\QueueingBundle\Adapter\DriverInterface;
 use Kaliop\QueueingBundle\Queue\MessageConsumerInterface;
+use Kaliop\QueueingBundle\Queue\QueueManagerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @todo inject Debug flag in both consumers and producers
@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Driver implements DriverInterface, ContainerAwareInterface
 {
     use ContainerAwareTrait;
+    use QueueManagerAwareTrait;
 
     protected $debug;
     protected $connections;
@@ -65,7 +66,7 @@ class Driver implements DriverInterface, ContainerAwareInterface
      */
     public function getQueueManager($queueName)
     {
-        $mgr = $this->container->get('kaliop_queueing.sqs.queue_manager');
+        $mgr = $this->getQueueManagerInternal();
         $mgr->setQueueName($queueName);
         return $mgr;
     }

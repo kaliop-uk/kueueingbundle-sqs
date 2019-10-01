@@ -10,7 +10,10 @@ class ServicesTest extends SQSTest
     public function testKnownServices()
     {
         $container = $this->getContainer();
-        $service = $container->get('test_alias.kaliop_queueing.driver.sqs');
+        $service = $container->get('kaliop_queueing.driver.sqs');
         $service = $container->get('test_alias.kaliop_queueing.sqs.queue_manager');
+
+        // useless assertion used to silence a warning that this test is risky
+        $this->assertEquals(1, 1);
     }
 }
