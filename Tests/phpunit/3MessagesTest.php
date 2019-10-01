@@ -18,7 +18,7 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"world"}');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $this->getConsumer($queueName, 'kaliop_queueing.message_consumer.noop')->consume(1, $this->timeout);
+        $this->getConsumer($queueName, 'test_alias.kaliop_queueing.message_consumer.noop')->consume(1, $this->timeout);
         $this->assertContains('world', $accumulator->getConsumptionResult());
     }
 
@@ -30,8 +30,8 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
-        $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $consumer = $this->getConsumer($queueName, 'kaliop_queueing.message_consumer.noop');
+        $accumulator = $this->getContainer()->get('test_alias.kaliop_queueing.message_consumer.filter.accumulator');
+        $consumer = $this->getConsumer($queueName, 'test_alias.kaliop_queueing.message_consumer.noop');
 
         $consumer->setRoutingkey('hello.world')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
@@ -52,8 +52,8 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
-        $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $consumer = $this->getConsumer($queueName, 'kaliop_queueing.message_consumer.noop');
+        $accumulator = $this->getContainer()->get('test_alias.kaliop_queueing.message_consumer.filter.accumulator');
+        $consumer = $this->getConsumer($queueName, 'test_alias.kaliop_queueing.message_consumer.noop');
 
         $consumer->setRoutingkey('*.world')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
@@ -72,8 +72,8 @@ class MessagesTest extends SQSTest
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
-        $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
-        $consumer = $this->getConsumer($queueName, 'kaliop_queueing.message_consumer.noop');
+        $accumulator = $this->getContainer()->get('test_alias.kaliop_queueing.message_consumer.filter.accumulator');
+        $consumer = $this->getConsumer($queueName, 'test_alias.kaliop_queueing.message_consumer.noop');
 
         $consumer->setRoutingkey('hello.#')->consume(1, $this->timeout);
         $this->assertContains('eng', $accumulator->getConsumptionResult());
