@@ -36,7 +36,7 @@ services:
         public: true
 
     test_alias.kaliop_queueing.message_consumer.filter.accumulator:
-        alias: 'kaliop_queueingmessage_consumer.filter.accumulator'
+        alias: 'kaliop_queueing.message_consumer.filter.accumulator'
         public: true
 
     test_alias.kaliop_queueing.message_consumer.noop:
