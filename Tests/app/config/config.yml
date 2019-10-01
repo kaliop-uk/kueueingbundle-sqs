@@ -34,3 +34,11 @@ services:
     test_alias.kaliop_queueing.message_producer.generic_message:
         alias: 'kaliop_queueing.message_producer.generic_message'
         public: true
+
+    test_alias.kaliop_queueing.message_consumer.filter.accumulator:
+        alias: 'kaliop_queueingmessage_consumer.filter.accumulator'
+        public: true
+
+    test_alias.kaliop_queueing.message_consumer.noop:
+        alias: 'kaliop_queueing.message_consumer.noop'
+        public: true
