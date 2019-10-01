@@ -25,6 +25,7 @@ services:
         class: '%kaliop_queueing.message_consumer.filter.accumulator.class%'
         tags:
              - { name: kaliop_queueing.event_listener, event: kaliop_queueing.message_consumed }
+        public: true
 
     # work around services being private by default in SF 3.4->4.0: register public testable aliases
     test_alias.kaliop_queueing.sqs.queue_manager:
@@ -33,10 +34,6 @@ services:
 
     test_alias.kaliop_queueing.message_producer.generic_message:
         alias: 'kaliop_queueing.message_producer.generic_message'
-        public: true
-
-    test_alias.kaliop_queueing.message_consumer.filter.accumulator:
-        alias: 'kaliop_queueing.message_consumer.filter.accumulator'
         public: true
 
     test_alias.kaliop_queueing.message_consumer.noop:
