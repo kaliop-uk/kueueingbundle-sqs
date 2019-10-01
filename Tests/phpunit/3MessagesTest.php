@@ -14,7 +14,7 @@ class MessagesTest extends SQSTest
     {
         $queueName = $this->createQueue();
 
-        $msgProducer = $this->getMsgProducer($queueName, 'kaliop_queueing.message_producer.generic_message');
+        $msgProducer = $this->getMsgProducer($queueName, 'test_alias.kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"world"}');
 
         $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
@@ -26,7 +26,7 @@ class MessagesTest extends SQSTest
     {
         $queueName = $this->createQueue();
 
-        $msgProducer = $this->getMsgProducer($queueName, 'kaliop_queueing.message_producer.generic_message');
+        $msgProducer = $this->getMsgProducer($queueName, 'test_alias.kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
 
@@ -47,7 +47,7 @@ class MessagesTest extends SQSTest
     {
         $queueName = $this->createQueue();
 
-        $msgProducer = $this->getMsgProducer($queueName, 'kaliop_queueing.message_producer.generic_message');
+        $msgProducer = $this->getMsgProducer($queueName, 'test_alias.kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"fre"}', null, 'bonjour.monde');
@@ -66,7 +66,7 @@ class MessagesTest extends SQSTest
     {
         $queueName = $this->createQueue();
 
-        $msgProducer = $this->getMsgProducer($queueName, 'kaliop_queueing.message_producer.generic_message');
+        $msgProducer = $this->getMsgProducer($queueName, 'test_alias.kaliop_queueing.message_producer.generic_message');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');
         $msgProducer->publish('{"hello":"eng"}', null, 'hello.world');

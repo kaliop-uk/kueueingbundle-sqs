@@ -30,3 +30,7 @@ services:
     test_alias.kaliop_queueing.sqs.queue_manager:
         alias: 'kaliop_queueing.sqs.queue_manager'
         public: true
+
+    test_alias.kaliop_queueing.message_producer.generic_message:
+        alias: 'kaliop_queueing.message_producer.generic_message'
+        public: true
