@@ -47,5 +47,7 @@ kaliop_queueing_plugins_sqs:
                 # aws-sdk that we rely on is known to produce objects graphs with cycles, which means that it does
                 # leak memory when running for a long time without invoking gc
                 gc_probability: 1
+                # Set this when using FIFO queues (alternatively, you can set it for each message sent)
+                message_group_id: ~
             # the name of the callback is fixed
             callback: kaliop_queueing.message_consumer.console_command

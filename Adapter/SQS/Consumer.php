@@ -64,7 +64,8 @@ class Consumer implements ConsumerInterface, SignalHandlingConsumerInterface
      *
      * @todo test if using $handlerList->removeByInstance we can disable debug as well
      */
-    public function setDebug($debug) {
+    public function setDebug($debug)
+    {
         if ($debug == $this->debug) {
             return $this;
         }

@@ -16,6 +16,7 @@ class Producer implements ProducerInterface
     // The message attribute used to store content-type. To be kept in sync with the Consumer
     protected $contentTypeAttribute = 'contentType';
     protected $routingKeyAttribute = 'routingKey';
+    protected $messageGroupId;
 
     /**
      * @param array $config - minimum seems to be: 'credentials', 'region', 'version'
@@ -49,6 +50,7 @@ class Producer implements ProducerInterface
 
     /**
      * @param string $queueName NB: complete queue name as used by SQS
+     * @param string $queueUrl
      * @return Producer
      * @todo test that we can successfully send messages to 2 queues using the same SqsClient
      */
@@ -67,15 +69,21 @@ class Producer implements ProducerInterface
         return $this->queueUrl;
     }
 
+    public function setMessageGroupId($messageGroupId)
+    {
+        $this->messageGroupId = $messageGroupId;
+    }
+
     /**
      * Publishes the message and does nothing with the properties
      *
      * @param string $msgBody
      * @param string $routingKey
-     * @param array $additionalProperties
+     * @param array $additionalProperties see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#sendmessage
      *
-     * @todo support custom message attributes
-     * @todo support custom delaySeconds
+     * @todo support custom message attributes (possible via $additionalProperties)
+     * @todo support custom delaySeconds (possible via $additionalProperties)
+     * @todo support custom MessageDeduplicationId (possible via $additionalProperties)
      */
     public function publish($msgBody, $routingKey = '', $additionalProperties = array())
     {
@@ -90,7 +98,10 @@ class Producer implements ProducerInterface
 
     /**
      * @see http://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#sendmessagebatch
-     * @param array $messages
+     * @param array[] $messages each element is an array that must contain:
+     *                          - msgBody (string)
+     *                          - routingKey (string, optional)
+     *                          - additionalProperties (array, optional)
      */
     public function batchPublish(array $messages)
     {
@@ -149,6 +160,11 @@ class Producer implements ProducerInterface
         if ($routingKey != '') {
             $result['MessageAttributes'][$this->routingKeyAttribute] = array('StringValue' => $routingKey, 'DataType' => 'String');
         }
+        if ($this->messageGroupId != null) {
+            $result['MessageGroupId'] = $this->messageGroupId;
+        }
+
+        $result = array_merge($result, $additionalProperties);
 
         return $result;
     }

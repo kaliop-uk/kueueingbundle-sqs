@@ -47,7 +47,8 @@ If you want to run the testsuite outside of Travis, you will need to
 
 1. have an AWS SQS account
 
-2. set the following environment variables: `SYMFONY__SQS__KEY` `SYMFONY__SQS__SECRET`
+2. set the following environment variables: `SYMFONY__SQS__KEY` `SYMFONY__SQS__SECRET` (note that the test config at
+   the moment hardcodes usage of the us-east-1 region)
 
 3. run `phpunit Tests/phpunit`
 

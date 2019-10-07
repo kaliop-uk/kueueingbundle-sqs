@@ -63,6 +63,9 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             $pDefinition
                 ->addMethodCall('setQueueUrl', array($consumer['queue_options']['name']))
             ;
+            if ($consumer['queue_options']['message_group_id'] != null) {
+                $pDefinition->addMethodCall('setMessageGroupId', array($consumer['queue_options']['message_group_id']));
+            }
             $name = sprintf('kaliop_queueing.sqs.%s_producer', $key);
             $this->container->setDefinition($name, $pDefinition);
 
