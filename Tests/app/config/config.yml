@@ -4,7 +4,7 @@ imports:
     - { resource: config.php }
 
 framework:
-    secret: "ThisIsNotSoSercretSoWeTestIt"
+    secret: "ThisIsNotSoSecretSoWeTestIt"
 
 kaliop_queueing_plugins_sqs:
 

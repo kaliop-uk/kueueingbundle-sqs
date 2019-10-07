@@ -1,3 +1,20 @@
+# Ver 0.9
+
+* NEW: the bundle is now compatible with Symfony versions all the way up to 4.3
+
+
+# Ver 0.8
+
+* NEW: it is now possible to set more configuration options for consumers via settings: `max_messages_per_request`,
+    `request_timeout`, `polling_interval` and `gc_probability`
+
+* FIXED: removed one leftover echo debug statement
+
+* FIXED: the Consumer does now honour the requestTimeout and requestBatchSize parameters when the `consume()` method
+    is called with a max amount of messages to retrieve and/or max time to run.
+    In version 0.7, passing non-0 values for those parameters would force the consumer to use long polling with 20
+    secs timeout and 10 messages batch-size per call. 
+
 
 # Ver 0.7
 
@@ -5,6 +22,7 @@
     It is now possible to use both a long timeout and/or a big number of messages to be consumed in calls to `consume`.
     The client will take care not to exceed in any case the AWS limits (20 secs timeout, 10 messages per call), and
     keep polling as long as one of the limits is reached
+
 
 # Ver 0.6
 
