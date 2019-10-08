@@ -94,4 +94,16 @@ class MessagesTest extends SQSTest
             )
         );
     }
+
+    public function testSendAndReceiveMessageFIFO()
+    {
+        $queueName = $this->createQueue(array('FifoQueue' => 'true', 'ContentBasedDeduplication' => 'true'));
+
+        $msgProducer = $this->getMsgProducer($queueName, 'test_alias.kaliop_queueing.message_producer.generic_message');
+        $msgProducer->publish('{"hello":"world"}');
+
+        $accumulator = $this->getContainer()->get('kaliop_queueing.message_consumer.filter.accumulator');
+        $this->getConsumer($queueName, 'test_alias.kaliop_queueing.message_consumer.noop')->consume(1, $this->timeout);
+        $this->assertContains('world', $accumulator->getConsumptionResult());
+    }
 }

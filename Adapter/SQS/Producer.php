@@ -72,6 +72,8 @@ class Producer implements ProducerInterface
     public function setMessageGroupId($messageGroupId)
     {
         $this->messageGroupId = $messageGroupId;
+
+        return $this;
     }
 
     /**
@@ -149,6 +151,8 @@ class Producer implements ProducerInterface
      * @param string $routingKey
      * @param array $additionalProperties
      * @return array
+     *
+     * @todo shall we throw if $additionalProperties['expiration'] is set, since we don't support it ?
      */
     protected function getClientParams($routingKey = '', array $additionalProperties = array())
     {
@@ -160,6 +164,7 @@ class Producer implements ProducerInterface
         if ($routingKey != '') {
             $result['MessageAttributes'][$this->routingKeyAttribute] = array('StringValue' => $routingKey, 'DataType' => 'String');
         }
+
         if ($this->messageGroupId != null) {
             $result['MessageGroupId'] = $this->messageGroupId;
         }

@@ -24,7 +24,8 @@ kaliop_queueing_plugins_sqs:
         console_command_queue:
             connection: default
             queue_options:
-                # name of the queue on AWS SQS
+                # Name of the queue on AWS SQS
+                # NB: FIFO queues _have_ to have a name ending in .fifo...
                 name: https://sqs.us-east-1.amazonaws.com/139046234059/ConsoleCommandQueue
                 # Routing keys available on this queue are the command to be executed, with double-colon replaced by dots
                 # A hash sign is a wildcard, while a star matches one word only

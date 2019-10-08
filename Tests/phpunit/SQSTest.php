@@ -80,15 +80,18 @@ abstract class SQSTest extends WebTestCase
             executeAction('delete');
     }
 
-    protected function createQueue()
+    protected function createQueue($queueConfig = array())
     {
-        $queueName = $this->getNewQueueName();
+        $queueName = $this->getNewQueueName(isset($queueConfig['FifoQueue']) && $queueConfig['FifoQueue']);
         $driver = $this->getDriver();
 
         // tricky bit: create the queue, as well as a producer and consumer. But to create the queue, we need a producer first!
         $driver->createProducer($queueName, null, 'default');
-        $queueUrl = $driver->getQueueManager($queueName)->executeAction('create');
+        $queueUrl = $driver->getQueueManager($queueName)->executeAction('create', $queueConfig);
         $driver->getProducer($queueName)->setQueueUrl($queueUrl);
+        if (isset($queueConfig['FifoQueue']) && $queueConfig['FifoQueue']) {
+            $driver->getProducer($queueName)->setMessageGroupId('hello');
+        }
         $driver->createConsumer($queueName, $queueUrl, 'default');
 
         // save the id of the created queue
@@ -100,7 +103,7 @@ abstract class SQSTest extends WebTestCase
         return $queueName;
     }
 
-    protected function getNewQueueName()
+    protected function getNewQueueName($isFifo = false)
     {
         $buildId = 'travis_test_' . getenv('TRAVIS_JOB_NUMBER');
         if ($buildId == 'travis_test_') {
@@ -109,7 +112,13 @@ abstract class SQSTest extends WebTestCase
 
         $buildId .= '_' . self::$queueCounter;
         self::$queueCounter++;
-        return str_replace( '.', '_', $buildId );
-    }
 
+        $qName = str_replace( '.', '_', $buildId );
+
+        if ($isFifo) {
+            $qName .= '.fifo';
+        }
+
+        return $qName;
+    }
 }

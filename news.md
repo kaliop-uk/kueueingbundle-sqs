@@ -1,3 +1,11 @@
+# Ver XXX
+
+* NEW: the bundle is now compatible with FIFO queues
+    In order to send messages to a FIFO queue, set the `message_group_id` in the queue_options configuration
+
+* NEW: it is now possible to set custom parameters for the `sendMessage` call via the Producer's `publish` method
+
+
 # Ver 0.9
 
 * NEW: the bundle is now compatible with Symfony versions all the way up to 4.3
