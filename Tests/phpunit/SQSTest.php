@@ -103,7 +103,7 @@ abstract class SQSTest extends WebTestCase
         $this->createdQueues[$queueName] = time();
 
         // give SQS a little time for the queue to propagate properly (better would be possibly to execute a 'list' call)
-        sleep(10);
+        sleep(15);
 
         return $queueName;
     }
