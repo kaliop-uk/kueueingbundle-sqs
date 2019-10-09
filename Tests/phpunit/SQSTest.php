@@ -102,8 +102,18 @@ abstract class SQSTest extends WebTestCase
         // save the id of the created queue
         $this->createdQueues[$queueName] = time();
 
-        // give SQS a little time for the queue to propagate properly (better would be possibly to execute a 'list' call)
-        sleep(15);
+        // give SQS a little time for the queue to propagate properly
+        $queueManager = $driver->getQueueManager($queueName);
+        for ($i = 0; $i < 15; $i++) {
+            try {
+                $info = $queueManager->executeAction('info');
+                break;
+            } catch (\Exception $e) {
+                // do nothing
+                var_dump($e);
+            }
+            sleep(1);
+        }
 
         return $queueName;
     }

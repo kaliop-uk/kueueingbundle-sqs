@@ -14,6 +14,7 @@ class QueueManagementTests extends SQSTest
         $queueName = $this->CreateQueue();
         $queueManager = $this->getDriver()->getQueueManager($queueName);
         $producer = $this->getDriver()->getProducer($queueName);
+var_dump($queueManager->executeAction('list-available'));
         $this->assertArrayHasKey($producer->getQueueUrl(), $queueManager->executeAction('list-available'));
     }
 
