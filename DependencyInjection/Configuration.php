@@ -81,7 +81,7 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * @todo we use an array for routing keys, as RabbitMQ config does, but we probably only support one
+     * @todo we use an array for routing keys, as RabbitMQ config does, but we currently only support one
      * @param ArrayNodeDefinition $node
      */
     protected function addQueueNodeConfiguration(ArrayNodeDefinition $node)
@@ -98,6 +98,7 @@ class Configuration implements ConfigurationInterface
                 ->integerNode('polling_interval')->min(0)->defaultValue(200000)->end()
                 ->integerNode('gc_probability')->min(0)->max(100)->defaultValue(1)->end()
                 ->scalarNode('message_group_id')->defaultValue(null)->end()
+                ->scalarNode('message_deduplication_id_calculator')->defaultValue(null)->end()
             ->end()
         ;
     }

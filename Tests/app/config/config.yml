@@ -27,6 +27,10 @@ services:
              - { name: kaliop_queueing.event_listener, event: kaliop_queueing.message_consumed }
         public: true
 
+    kaliop_queueing.message_producer.deduplication_id_calculator.sequence:
+        class: 'Kaliop\Queueing\Plugins\SQSBundle\Service\MessageDeduplicationIdCalculator\Sequence'
+        public: true
+
     # work around services being private by default in SF 3.4->4.0: register public testable aliases
     test_alias.kaliop_queueing.sqs.queue_manager:
         alias: 'kaliop_queueing.sqs.queue_manager'

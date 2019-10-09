@@ -66,6 +66,9 @@ class KaliopQueueingPluginsSQSExtension extends Extension
             if ($consumer['queue_options']['message_group_id'] != null) {
                 $pDefinition->addMethodCall('setMessageGroupId', array($consumer['queue_options']['message_group_id']));
             }
+            if ($consumer['queue_options']['message_deduplication_id_calculator'] != null) {
+                $pDefinition->addMethodCall('setMessageDeduplicationIdCalculator', array($consumer['queue_options']['message_deduplication_id_calculator']));
+            }
             $name = sprintf('kaliop_queueing.sqs.%s_producer', $key);
             $this->container->setDefinition($name, $pDefinition);
 

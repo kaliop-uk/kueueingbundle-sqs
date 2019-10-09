@@ -89,8 +89,13 @@ abstract class SQSTest extends WebTestCase
         $driver->createProducer($queueName, null, 'default');
         $queueUrl = $driver->getQueueManager($queueName)->executeAction('create', $queueConfig);
         $driver->getProducer($queueName)->setQueueUrl($queueUrl);
-        if (isset($queueConfig['FifoQueue']) && $queueConfig['FifoQueue']) {
+        if (isset($queueConfig['FifoQueue']) && $queueConfig['FifoQueue'] == 'true') {
             $driver->getProducer($queueName)->setMessageGroupId('hello');
+            if (!isset($queueConfig['ContentBasedDeduplication']) || $queueConfig['ContentBasedDeduplication'] != 'true') {
+                $driver->getProducer($queueName)->setMessageDeduplicationIdCalculator(
+                    $this->getContainer()->get('kaliop_queueing.message_producer.deduplication_id_calculator.sequence')
+                );
+            }
         }
         $driver->createConsumer($queueName, $queueUrl, 'default');
 

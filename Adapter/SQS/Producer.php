@@ -17,6 +17,8 @@ class Producer implements ProducerInterface
     protected $contentTypeAttribute = 'contentType';
     protected $routingKeyAttribute = 'routingKey';
     protected $messageGroupId;
+    /** @var MessageDeduplicationIdCalculatorInterface $messageDeduplicationIdCalculator */
+    protected $messageDeduplicationIdCalculator;
 
     /**
      * @param array $config - minimum seems to be: 'credentials', 'region', 'version'
@@ -36,7 +38,8 @@ class Producer implements ProducerInterface
      *
      * @todo test if using $handlerList->removeByInstance we can disable debug as well
      */
-    public function setDebug($debug) {
+    public function setDebug($debug)
+    {
         if ($debug == $this->debug) {
             return $this;
         }
@@ -76,6 +79,13 @@ class Producer implements ProducerInterface
         return $this;
     }
 
+    public function setMessageDeduplicationIdCalculator(MessageDeduplicationIdCalculatorInterface $messageDeduplicationIdCalculator)
+    {
+        $this->messageDeduplicationIdCalculator = $messageDeduplicationIdCalculator;
+
+        return $this;
+    }
+
     /**
      * Publishes the message and does nothing with the properties
      *
@@ -83,9 +93,9 @@ class Producer implements ProducerInterface
      * @param string $routingKey
      * @param array $additionalProperties see https://docs.aws.amazon.com/aws-sdk-php/v3/api/api-sqs-2012-11-05.html#sendmessage
      *
-     * @todo support custom message attributes (possible via $additionalProperties)
-     * @todo support custom delaySeconds (possible via $additionalProperties)
-     * @todo support custom MessageDeduplicationId (possible via $additionalProperties)
+     * @todo support custom message attributes (already possible via $additionalProperties)
+     * @todo support custom delaySeconds (already possible via $additionalProperties)
+     * @todo support custom MessageDeduplicationId (already possible via $additionalProperties)
      */
     public function publish($msgBody, $routingKey = '', $additionalProperties = array())
     {
@@ -94,7 +104,7 @@ class Producer implements ProducerInterface
                 'QueueUrl' => $this->queueUrl,
                 'MessageBody' => $msgBody,
             ),
-            $this->getClientParams($routingKey, $additionalProperties)
+            $this->getClientParams($msgBody, $routingKey, $additionalProperties)
         ));
     }
 
@@ -117,7 +127,7 @@ class Producer implements ProducerInterface
                         'MessageBody' => $message['msgBody'],
                         'Id' => $j++
                     ),
-                    $this->getClientParams(@$message['routingKey'], @$message['additionalProperties'])
+                    $this->getClientParams($message['msgBody'], @$message['routingKey'], @$message['additionalProperties'])
                 );
             }
 
@@ -143,30 +153,36 @@ class Producer implements ProducerInterface
      */
     public function call($method, array $args = array())
     {
-        return $this->client->$method(array_merge($args, $this->getClientParams()));
+        return $this->client->$method($args/*array_merge($args, $this->getClientParams())*/);
     }
 
     /**
-     * Prepares the extra parameters to be injected into calls made via the SQS Client
+     * Prepares the extra parameters to be injected into sendMessage calls made via the SQS Client
+     * @param string $msgBody
      * @param string $routingKey
      * @param array $additionalProperties
      * @return array
      *
      * @todo shall we throw if $additionalProperties['expiration'] is set, since we don't support it ?
      */
-    protected function getClientParams($routingKey = '', array $additionalProperties = array())
+    protected function getClientParams($msgBody = null, $routingKey = '', array $additionalProperties = array())
     {
         $result = array(
             'MessageAttributes' => array(
                 $this->contentTypeAttribute => array('StringValue' => $this->contentType, 'DataType' => 'String'),
             )
         );
+
         if ($routingKey != '') {
             $result['MessageAttributes'][$this->routingKeyAttribute] = array('StringValue' => $routingKey, 'DataType' => 'String');
         }
 
         if ($this->messageGroupId != null) {
             $result['MessageGroupId'] = $this->messageGroupId;
+        }
+
+        if ($this->messageDeduplicationIdCalculator != null) {
+            $result['MessageDeduplicationId'] = $this->messageDeduplicationIdCalculator->getMessageId($msgBody, $routingKey, $additionalProperties);
         }
 
         $result = array_merge($result, $additionalProperties);
@@ -177,7 +193,6 @@ class Producer implements ProducerInterface
     /**
      * @param string $contentType
      * @return Producer
-     * @throws \Exception if unsupported contentType is used
      */
     public function setContentType($contentType)
     {
