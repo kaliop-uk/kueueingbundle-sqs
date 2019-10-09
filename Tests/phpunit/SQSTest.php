@@ -110,7 +110,7 @@ abstract class SQSTest extends WebTestCase
                 break;
             } catch (\Exception $e) {
                 // do nothing
-                var_dump($e);
+                //var_dump($e);
             }
             sleep(1);
         }
