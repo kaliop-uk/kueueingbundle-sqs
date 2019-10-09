@@ -153,7 +153,7 @@ class Producer implements ProducerInterface
      */
     public function call($method, array $args = array())
     {
-        return $this->client->$method($args/*array_merge($args, $this->getClientParams())*/);
+        return $this->client->$method($args);
     }
 
     /**

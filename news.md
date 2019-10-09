@@ -1,4 +1,4 @@
-# Ver XXX
+# Ver 0.10
 
 * NEW: the bundle is now compatible with FIFO queues
     In order to send messages to a FIFO queue, set the `message_group_id` in the queue_options configuration

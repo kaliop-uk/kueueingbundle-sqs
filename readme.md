@@ -43,14 +43,18 @@ It has been given its own bundle because it has higher requirements than the bas
 
 ## Running tests
 
-If you want to run the testsuite outside of Travis, you will need to
+If you want to run the test suite outside of Travis, you will need to
 
 1. have an AWS SQS account
 
 2. set the following environment variables: `SYMFONY__SQS__KEY` `SYMFONY__SQS__SECRET` (note that the test config at
    the moment hardcodes usage of the us-east-1 region)
 
-3. run `phpunit Tests/phpunit`
+3. check out somewhere this bundle (no need to install the full Symfony stack)
+
+4. run `composer install`
+
+5. run `php vendor/phpunit/phpunit/phpunit Tests/phpunit`
 
 
 ## Notes
@@ -75,11 +79,15 @@ If you want to run the testsuite outside of Travis, you will need to
 * SQS does *not* support setting a per-message TTL, only a per-queue one, so all MessageProducers which do have a TTL
     parameter in their public methods will just ignore it when being used with the SQS driver
 
-* SQS does *not* guarantee that messages are delivered in the same order they are sent.
-    If such a constraint is important, build monotonically increasing message IDs in your app, and manage them.
+* SQS does *not* guarantee that messages are delivered in the same order they are sent, unless you use FIFO queues.
+    To use a FIFO queue:
+        - create the FIFO queue
+        - in the bundle configuration, set a value for the `message_group_id` setting for your queue
+        - if you use custom unique message IDs, you will have to set up a service implementing the MessageDeduplicationIdCalculatorInterface
+          interface, and hook it up it using the `message_deduplication_id_calculator` setting for your queue
 
 * SQS does guarantee that messages are delivered, but it does *not* guarantee that every message is delivered only once.
-    If such a constraint is important, build unique message IDs in your app, and manage them. 
+    If such a constraint is important, build unique message IDs in your app and manage them - or use FIFO queues. 
 
 * For a more in-depth comparison of SQS and RabbitMQ, see f.e. http://blog.turret.io/rabbitmq-vs-amazon-sqs-a-short-comparison/
 
