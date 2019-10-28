@@ -54,7 +54,7 @@ after_script:
   - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then wget https://scrutinizer-ci.com/ocular.phar; fi
   - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then php ocular.phar code-coverage:upload --format=php-clover coverage.clover; fi
   # Upload code-coverage to CodeClimate
-  - if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then CODECLIMATE_REPO_TOKEN=TOBEGOTTEN ./vendor/bin/test-reporter --coverage-report=coverage.clover; fi
+  #- if [ "$CODE_COVERAGE" = "1" -a -f coverage.clover ]; then CODECLIMATE_REPO_TOKEN=TOBEGOTTEN ./vendor/bin/test-reporter --coverage-report=coverage.clover; fi
 
 # Try to avoid problems with shared composer caches...
 #cache:
